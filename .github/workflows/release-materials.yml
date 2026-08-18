@@ -13,8 +13,9 @@ on:
         description: "1. repo to release from in the course org"
         required: true
         type: choice
+        default: "course-materials-f2026"
         options:
-          - (none-yet)
+          - course-materials-f2026
       course_source_path:
         description: "2. within-repo folder/file path to copy from (or comma-separated list)"
         required: true
