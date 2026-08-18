@@ -1,8 +1,8 @@
-# Natural Language Processing  Course
+# Natural Language Processing Course
 
 >_This page is auto-generated; edits will be overwritten on the next refresh._
 
-This is the dedicated **Natural Language Processing ** **course org** - persistent across years. It acts as:
+This is the dedicated **Natural Language Processing** **course org** - persistent across years. It acts as:
 1. A **private staging area** for pre-release version-controlled materials & assignments,
 2. A **historical record** of past years' materials,
 3. A **central control panel** for  instructors to run workflows from via the seeded [`.github` Actions tab](https://github.com/hertie-nlp-e1282/.github/actions).
@@ -27,7 +27,7 @@ List of all repositories associated with the course org. _Auto-discovered from t
 
 | Repo | Visibility | Description |
 | --- | --- | --- |
-| _(no repos yet)_ | | |
+| [course-materials-f2026](https://github.com/hertie-nlp-e1282/course-materials-f2026) | private | Course materials (lectures/readings by session) |
 
 Edit & stage new course-related content in these, then release it to the relevant cohort org using the GitHub Actions below.
 
