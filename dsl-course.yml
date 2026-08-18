@@ -32,6 +32,7 @@ course_code: E1282
 people:
   course_admins:
     - github_handle: "lramir14"    # grants the `course-admin` team
+    - github_handle: "lonnychen"
 
   # Instructor website cards (optional, DISPLAY ONLY - no GitHub access) for the
   # OPTIONAL public open-courseware course website. TAs are NOT listed here - a
