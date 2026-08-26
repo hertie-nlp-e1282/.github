@@ -1,13 +1,15 @@
+# SYSTEM-OWNED - do not edit, edits here are overwritten. This workflow is
+# re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Grade assignment
 
 # Faculty-side autograder, by hand. The hourly cron already grades each assignment ONCE at
-# its grading deadline - this button is for a deliberate re-grade. Clones each submission as
+# its grading deadline - this workflow is for a deliberate re-grade. Clones each submission as
 # of the cohort schedule's grading deadline (`grading_datetime`, else `due_datetime` -
 # SSOT, no input here), runs the HIDDEN tests from the template's solution branch, archives
 # result.json, and fills the machine score into the private grades CSV (faculty & instructors
 # then add manual marks; Render + Distribute send them).
 #
-# WRITE-ONCE: an `auto`/`team`/`team_grade` cell that already holds a value is never
+# WRITE-ONCE: an `autograde_score`/`team` cell that already holds a value is never
 # overwritten, so re-running does NOT refresh scores - it only fills cells still empty. For a
 # fresh machine score, clear those cells first (and delete classroom-config/autograde/<slug>/
 # to let the cron regrade). Nothing is written to student repos. dry_run lists what would be

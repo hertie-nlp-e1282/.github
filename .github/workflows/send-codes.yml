@@ -1,3 +1,5 @@
+# SYSTEM-OWNED - do not edit, edits here are overwritten. This workflow is
+# re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Send enrolment codes
 
 # Generates a random enrolment code per student (into classroom-config/students.csv) and

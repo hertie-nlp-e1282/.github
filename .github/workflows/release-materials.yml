@@ -1,3 +1,5 @@
+# SYSTEM-OWNED - do not edit, edits here are overwritten. This workflow is
+# re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Release materials
 
 # Central copy: pick the SOURCE repo in this course org, then the path(s) to copy into

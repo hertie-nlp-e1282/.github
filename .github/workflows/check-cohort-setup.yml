@@ -1,7 +1,9 @@
+# SYSTEM-OWNED - do not edit, edits here are overwritten. This workflow is
+# re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Check cohort setup
 
 # A per-cohort glance view of everything configured (and everything still missing),
-# with direct links to fix it. Read-only - this button changes nothing.
+# with direct links to fix it. Read-only - this workflow changes nothing.
 
 on:
   workflow_dispatch:

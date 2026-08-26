@@ -1,23 +1,25 @@
+<!-- SYSTEM-OWNED - do not edit, edits here are overwritten on the next refresh. -->
+
 # Natural Language Processing - course control panel
 
-This is the **`.github` repo** for the `hertie-nlp-e1282` course org - the control panel faculty & instructors use to run
-the course.
+This is the **`.github` repo** for the `hertie-nlp-e1282` course org - the primary control panel faculty & instructors use
+to run and configure the course.
 
 ## Run an action
 
-Open the **[Actions tab](https://github.com/hertie-nlp-e1282/.github/actions)**, pick a workflow, and click **Run workflow**. Buttons only show if you have write access - i.e. you're either (1) in this org's `course-admin` team (declared here, course-wide), or (2) in a cohort's `instructors-<tag>` team (declared in that cohort's own `classroom-config/people.yml` then back-propagated). The full, annotated list of actions is on the **[org home page](https://github.com/hertie-nlp-e1282)**.
+Open the **[Actions tab](https://github.com/hertie-nlp-e1282/.github/actions)**, pick a workflow, and click **Run workflow**. Workflows only show if you have write access - i.e. you're either (1) in this org's `course-admin` team (declared here, course-wide), or (2) in a cohort's `instructors-<tag>` team (declared in that cohort's own `classroom-config/people.yml` then back-propagated). The full, annotated list of actions is on the **[org home page](https://github.com/hertie-nlp-e1282)**.
 
 ## Typical flow
 
 1. **New materials repo** / **New assignment** - scaffold your content repos, then fill them in.
 2. Create an empty **cohort org** for the year, add the bot as an Owner, then run **Bootstrap cohort**.
-3. Each session: **Release materials** / **Release assignment**.
+3. Each session: **Release materials** / **Release assignment** - or pre-schedule them in `schedule.yml` (recommended).
 4. Grading: **Grade assignment** -> **Sync gradebooks** -> **Render grades** -> **Distribute grades**.
 
 ## What's in here
 
-- `.github/workflows/` - the workflows.
-- `dsl-course.yml` - this course's identity (name/code) and registry of `course_admins`. (Instructors/TAs and the schedule are all declared per cohort - not here).
-- `profile/README.md` - the public org landing page (auto-generated repo index).
+- `.github/workflows/` - the workflows. SYSTEM-OWNED: do not edit or delete them.
+- `dsl-course.yml` - this course's identity (name/code) and the registry of `course_admins`, who persist across years. INSTRUCTOR-OWNED. (Per-cohort instructors/TAs and the schedule are declared in the cohort org - not here).
+- `profile/README.md` - the public org landing page (an auto-generated repo index). SYSTEM-OWNED: do not edit it.
 
 Built and kept in sync by the [DSL teaching toolkit](https://github.com/hertie-data-science-lab/dsl-teaching-toolkit).
