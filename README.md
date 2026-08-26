@@ -1,4 +1,4 @@
-# Natural Language Processing  - course control panel
+# Natural Language Processing - course control panel
 
 This is the **`.github` repo** for the `hertie-nlp-e1282` course org - the control panel faculty & instructors use to run
 the course.
