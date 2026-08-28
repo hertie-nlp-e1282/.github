@@ -27,7 +27,7 @@ List of all repositories associated with the course org. _Auto-discovered from t
 
 | Repo | Visibility | Description |
 | --- | --- | --- |
-| [course-materials-f2026](https://github.com/hertie-nlp-e1282/course-materials-f2026) | private | Course materials (lectures/readings by session) |
+| [course-materials-f2026](https://github.com/hertie-nlp-e1282/course-materials-f2026) | private | Course materials (lectures/labs/readings/datasets/other) by session |
 
 Edit & stage new course-related content in these, then release it to the relevant cohort org.
 
