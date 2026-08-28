@@ -17,8 +17,9 @@ on:
         description: "Cohort whose site to regenerate from the org structure"
         required: true
         type: choice
+        default: "hertie-nlp-e1282-f2026"
         options:
-          - (none-yet)
+          - hertie-nlp-e1282-f2026
 
 permissions: {}
 

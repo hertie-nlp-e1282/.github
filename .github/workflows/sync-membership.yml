@@ -20,6 +20,7 @@ on:
         default: "(faculty only)"
         options:
           - (faculty only)
+          - hertie-nlp-e1282-f2026
 
 permissions: {}
 

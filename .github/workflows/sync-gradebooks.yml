@@ -12,8 +12,9 @@ on:
         description: "Cohort org"
         required: true
         type: choice
+        default: "hertie-nlp-e1282-f2026"
         options:
-          - (none-yet)
+          - hertie-nlp-e1282-f2026
       dry_run:
         description: "Preview only - list the gradebook repos that WOULD be created"
         type: boolean
