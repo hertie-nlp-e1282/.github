@@ -19,7 +19,7 @@ The substantive repos of this org are private (not accessible to enrolled studen
 List of cohort orgs registered to receive releases from this course org. _Auto-discovered from the
 `cohort-courses-pages.yml` registry_:
 
-- [hertie-nlp-e1282-f2026](https://github.com/hertie-nlp-e1282-f2026)
+- [hertie-nlp-f2026](https://github.com/hertie-nlp-f2026)
 
 ## Repositories
 
