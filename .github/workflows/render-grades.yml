@@ -13,9 +13,9 @@ on:
         description: "Cohort org"
         required: true
         type: choice
-        default: "hertie-nlp-e1282-f2026"
+        default: "hertie-nlp-f2026"
         options:
-          - hertie-nlp-e1282-f2026
+          - hertie-nlp-f2026
 
 permissions: {}
 
