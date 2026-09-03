@@ -4,7 +4,9 @@ org: hertie-nlp-e1282
 org_name: Natural Language Processing
 course_name: Natural Language Processing
 course_code: E1282
-# course_description: One or two sentences, on ONE line - the blurb on every cohort site.
+# One or two sentences, on ONE line - the blurb on every cohort site. Taken verbatim
+# from the Course Contents section of SYLLABUS.md in course-materials-f2026.
+course_description: "The course provides a conceptual and applied introduction to Natural Language processing (NLP). The program introduces NLP within the broader fields of Machine Learning and Deep Learning. It will cover core topics such as text representation, text preprocessing, supervised and unsupervised learning with labeled and unlabeled datasets, model evaluations, and emerging trends including using other data sources such as audio and video."
 # site_link_extensions: [pdf, html, ipynb]   # OPTIONAL: on the COHORT sites, link ONLY
 #   # these file types. Default (unset): each session's root files, plus one link per
 #   # subfolder - so a rendered deck lists the deck, not its hundreds of assets. Either way
