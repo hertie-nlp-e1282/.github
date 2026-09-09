@@ -1,39 +1,31 @@
 # SYSTEM-OWNED - do not edit, edits here are overwritten. This workflow is
 # re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
-name: Archive cohort
+name: Derive student version
 
-# End of term, once, after the last grades have gone out. Revokes each student's direct
-# grant on the submission repos and gradebooks named after them, ARCHIVES those repos,
-# archives `welcome` so a finished term cannot still be joined, writes the teardown record
-# into the cohort's private classroom-config and archives that last - which is also what
-# tells the nightly refresh this cohort is finished.
-# NOTHING IS DELETED. Archiving is GitHub's reversible read-only freeze, and un-archiving a
-# repo from its own Settings page brings it back exactly as it was.
-# `dry_run` defaults to true and prints counts only. A real run refuses unless the cohort's
-# schedule.yml declares a `semester_end` that has passed; `force` says so by hand.
-# A run that dies half way is resumed by running it again - see docs/10.
+# ONE authored file, two branches. Keep the notebook you actually teach from on the
+# template's `solution` branch, under `solution/`, with the answers fenced off in the
+# nbgrader/Otter vocabulary: `### BEGIN SOLUTION` / `### END SOLUTION`, a `solution` cell
+# tag, or an Rmd/qmd chunk with `solution=TRUE`. This reads that branch and writes the
+# fenced-out version onto `main` - the only branch template-generate copies into a student
+# repo - so the starter is never maintained by hand beside the answer it is meant to be
+# missing. It never writes to `solution`, and a file with nothing fenced in it is never
+# written at all: the "starter" derived from that would be the model answer.
+# `dry_run` defaults to true and prints the file list and the counts, never the content.
+# See docs/03-add-assignment-to-course.md.
 
 on:
   workflow_dispatch:
     inputs:
-      cohort_org:
-        description: "Cohort org"
+      course_source_repo:
+        description: "Assignment template to derive the student starter for (e.g. assignment-1-f2026)"
         required: true
-        type: choice
-        default: "hertie-nlp-f2026"
-        options:
-          - hertie-nlp-f2026
       dry_run:
-        description: "Preview the teardown - freeze nothing, revoke nothing"
+        description: "Preview only - list the files and how much would be stripped out of each"
         type: boolean
         default: true
-      force:
-        description: "Close out even though the term is not over"
-        type: boolean
-        default: false
 
 concurrency:
-  group: ${{ github.repository }}-archive-cohort
+  group: ${{ github.repository }}-derive-student-version
   cancel-in-progress: false
 
 permissions: {}
@@ -58,10 +50,10 @@ jobs:
           cat /tmp/gherr || true
           exit 1
 
-  archive-cohort:
+  derive:
     needs: check-team
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
@@ -77,14 +69,13 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: Archive cohort
+      - name: Derive student version
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
-          COHORT_ORG: ${{ inputs.cohort_org }}
+          COURSE_ORG: ${{ github.repository_owner }}
+          COURSE_SOURCE_REPO: ${{ inputs.course_source_repo }}
           DRY_RUN: ${{ inputs.dry_run }}
-          FORCE: ${{ inputs.force }}
         run: |
-          args=(--cohort-org "$COHORT_ORG")
+          args=(--course-org "$COURSE_ORG" --course-source-repo "$COURSE_SOURCE_REPO")
           if [ "$DRY_RUN" = "false" ]; then args+=(--no-dry-run); else args+=(--dry-run); fi
-          [ "$FORCE" = "true" ] && args+=(--force)
-          python3 -m dsl_course.teardown "${args[@]}"
+          python3 -m dsl_course.derive "${args[@]}"
