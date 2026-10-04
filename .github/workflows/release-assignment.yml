@@ -10,8 +10,12 @@ on:
   workflow_dispatch:
     inputs:
       course_source_repo:
-        description: "1. Course-org repo to hand out from (e.g. assignment-1-f2026)"
+        description: "1. Course-org repo to hand out from"
         required: true
+        type: choice
+        default: "assignment-1-f2026"
+        options:
+          - assignment-1-f2026
       cohort_org:
         description: "2. Target cohort org"
         required: true

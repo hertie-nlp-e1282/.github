@@ -23,8 +23,12 @@ on:
         options:
           - hertie-nlp-f2026
       course_source_repo:
-        description: "Assignment template holding the corrected file (e.g. assignment-1-f2026)"
+        description: "Assignment template holding the corrected file"
         required: true
+        type: choice
+        default: "assignment-1-f2026"
+        options:
+          - assignment-1-f2026
       path:
         description: "File or folder on the template's default branch to push (e.g. starter.ipynb, or data/)"
         required: true

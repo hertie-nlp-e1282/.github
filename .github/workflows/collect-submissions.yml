@@ -21,8 +21,12 @@ on:
         options:
           - hertie-nlp-f2026
       course_source_repo:
-        description: "Course-org repo to hand out from (e.g. assignment-1-f2026)"
+        description: "Course-org repo to hand out from"
         required: true
+        type: choice
+        default: "assignment-1-f2026"
+        options:
+          - assignment-1-f2026
       slug:
         description: "Only if TWO schedule.yml assignments hand out from this template: which one (the schedule key). Leave empty otherwise"
         required: false
