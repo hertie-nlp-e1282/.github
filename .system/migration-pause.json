@@ -1,6 +1,6 @@
 {
   "hold": true,
-  "migrated": false,
+  "migrated": true,
   "repos": {
     "hertie-nlp-e1282/.github": {
       "allowed_actions": "all",
