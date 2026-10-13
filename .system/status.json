@@ -1,0 +1,156 @@
+{
+  "schema": "dsl.status/1",
+  "inputs": {
+    "dsl-course.yml": "5578ce294abef04e1c345853089420e7c786be5f",
+    "semesters.yml": "9cf36682775e1648aeb4d78f3c634a21e01fce53"
+  },
+  "horizon": {
+    "days": 7
+  },
+  "course": {
+    "org": "hertie-nlp-e1282",
+    "name": "Natural Language Processing",
+    "code": "E1282",
+    "stages": {
+      "C1": "done",
+      "C2": "done",
+      "C3": "done",
+      "C4": "done",
+      "C5": "todo",
+      "C6": "todo"
+    },
+    "stage_why": {
+      "C5": "No assignment template is ready yet.",
+      "C6": "The public website is off; it is optional."
+    },
+    "stage_need": {
+      "C1": "needed",
+      "C2": "needed",
+      "C3": "needed",
+      "C4": "suggested",
+      "C5": "suggested",
+      "C6": "suggested"
+    },
+    "stage_set_aside": {
+      "C1": false,
+      "C2": false,
+      "C3": false,
+      "C4": false,
+      "C5": false,
+      "C6": false
+    },
+    "verdict": {
+      "state": "ready",
+      "problems": 0,
+      "missing": null,
+      "suggestions": 4
+    },
+    "materials": [
+      {
+        "repo": "course-materials-f2026",
+        "state": "ready",
+        "checks": [
+          {
+            "id": "kind_folder",
+            "label": "At least one folder of a content kind",
+            "done": true,
+            "why": null,
+            "need": "needed",
+            "detail": [
+              {
+                "kind": "lecture",
+                "folders": [
+                  "lectures"
+                ]
+              },
+              {
+                "kind": "lab",
+                "folders": [
+                  "labs"
+                ]
+              },
+              {
+                "kind": "readings",
+                "folders": [
+                  "readings"
+                ]
+              },
+              {
+                "kind": "exam",
+                "folders": []
+              },
+              {
+                "kind": "drop-in",
+                "folders": []
+              },
+              {
+                "kind": "other",
+                "folders": []
+              }
+            ]
+          },
+          {
+            "id": "syllabus",
+            "label": "Syllabus",
+            "done": false,
+            "why": "The weekly plan (written from the schedule) is not in SYLLABUS.md yet.",
+            "need": "suggested"
+          },
+          {
+            "id": "withheld",
+            "label": "Withheld patterns reviewed",
+            "done": false,
+            "why": "Nothing is withheld from students yet; review the withheld patterns.",
+            "need": "suggested"
+          }
+        ]
+      }
+    ],
+    "templates": [
+      {
+        "repo": "assignment-1-f2026",
+        "state": "todo",
+        "starter": "none"
+      }
+    ],
+    "semesters": [
+      "hertie-nlp-f2026"
+    ],
+    "todo": [
+      {
+        "id": "materials:course-materials-f2026:syllabus",
+        "kind": "materials",
+        "check": "syllabus",
+        "repo": "course-materials-f2026",
+        "text": "The weekly plan (written from the schedule) is not in SYLLABUS.md yet.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:withheld",
+        "kind": "materials",
+        "check": "withheld",
+        "repo": "course-materials-f2026",
+        "text": "Nothing is withheld from students yet; review the withheld patterns.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "template:assignment-1-f2026:brief",
+        "kind": "template",
+        "check": "brief",
+        "repo": "assignment-1-f2026",
+        "text": "The brief (README.md) is not written yet.",
+        "screen": "template",
+        "entry": "assignment-1-f2026",
+        "need": "needed",
+        "set_aside": false
+      }
+    ]
+  },
+  "problems": []
+}
