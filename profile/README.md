@@ -7,17 +7,17 @@ This is the dedicated **Natural Language Processing** **course org** - persisten
 2. A **historical record** of past years' materials,
 3. A **central control panel** for instructors to run workflows from, via the seeded [`.github` Actions tab](https://github.com/hertie-nlp-e1282/.github/actions).
 
-The substantive repos of this org are private (not accessible to enrolled students); each year's student-facing interface lives in a separate **cohort org** that receives releases from here.
+The substantive repos of this org are private (not accessible to enrolled students); each year's student-facing interface lives in a separate **semester org** that receives releases from here.
 
 > **Faculty & instructors - start here:** New to the platform?
 > Follow the step-by-step
-> **[workflow runbooks](https://github.com/hertie-data-science-lab/dsl-teaching-toolkit/blob/release/docs/README.md)**.
-> The sections below are a live index of this org's cohorts, repositories, and actions.
+> **[workflow runbooks](https://github.com/hertie-data-science-lab/dsl-teaching-toolkit/blob/78da401eed3ddd2b42d571cebb6070305e6d384f/docs/README.md)**.
+> The sections below are a live index of this org's semesters, repositories, and actions.
 
-## Cohorts
+## Semesters
 
-List of cohort orgs registered to receive releases from this course org. _Auto-discovered from the
-`cohort-courses-pages.yml` registry_:
+List of semester orgs registered to receive releases from this course org. _Auto-discovered from the
+`semesters.yml` registry_:
 
 - [hertie-nlp-f2026](https://github.com/hertie-nlp-f2026)
 
@@ -30,7 +30,7 @@ List of all repositories associated with the course org. _Auto-discovered from t
 | [assignment-1-f2026](https://github.com/hertie-nlp-e1282/assignment-1-f2026) | private | Assignment 1: Quiz 1 |
 | [course-materials-f2026](https://github.com/hertie-nlp-e1282/course-materials-f2026) | private | Course materials (lectures/labs/readings/datasets/other) by session |
 
-Edit & stage new course-related content in these, then release it to the relevant cohort org.
+Edit & stage new course-related content in these, then release it to the relevant semester org.
 
 ## Available actions for faculty, instructors & admin
 
@@ -42,22 +42,22 @@ _(automatically bootstrapped from the central
 
 | Action | What it does | Managed |
 | --- | --- | --- |
-| [**Bootstrap cohort**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/bootstrap-cohort.yml) | Configures a freshly-created cohort org (sets up scaffold repos, registers it with the course org, seeds workflow functionality). | Run by instructor |
-| [**Send enrolment codes**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/send-codes.yml) | Generates enrolment codes for each student and emails each their code (to their Hertie email address). Students paste the code into the welcome Join course issue. This keeps personal data out of the public repo. There is no button: a push to a cohort's `students.csv` is what fires it, and it sends for real - so a re-send means clearing that row's `code_sent_at` and pushing again. | Automatic |
+| [**Bootstrap semester**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/bootstrap-semester.yml) | Configures a freshly-created semester org (sets up scaffold repos, registers it with the course org, seeds workflow functionality). | Run by instructor |
+| [**Send enrolment codes**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/send-codes.yml) | Generates enrolment codes for each student and emails each their code (to their Hertie email address). Students paste the code into the Join course issue. This keeps personal data out of the public repo. There is no button: a push to a semester's `students.csv` is what fires it, and it sends for real - so a re-send means clearing that row's `code_sent_at` and pushing again. | Automatic |
 | [**New materials repo**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/new-materials.yml) | Scaffolds a correctly-structured `course-materials-<year>` repo (session folders + the Release workflows). Ready for material to be added. | Run by instructor |
-| [**New assignment**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/new-assignment.yml) | Scaffolds an `assignment-N-<year>` template repo from ten answers: brief + starter(s) on `main`; the `solution` branch carries the model solution and `grading_config.yml`, which defines the assignment from there on (hidden tests only when you asked for autograding). | Run by instructor |
-| [**Derive student version**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/derive-student-version.yml) | Writes an assignment's student starter onto `main` from the ONE notebook you keep on its `solution` branch, with the fenced answers (`### BEGIN SOLUTION`, a `solution` cell tag, an Rmd `solution=TRUE` chunk) replaced by placeholders. So you maintain one file, not two. It never writes to `solution`, and it refuses to write a file that had nothing fenced in it. Dry run first. | Run by instructor |
-| [**Generate syllabus**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/generate-syllabus.yml) | Writes the "Course sessions and readings" section of a syllabus - one block per session, with its title, learning objectives and reading list - from a cohort's `classroom-config/schedule.yml` and this repo's `readings/` folders. It lands in `SYLLABUS.sessions.md` beside your syllabus (never released to students) and never edits `SYLLABUS.md` itself. | Run by instructor |
-| [**Check cohort setup**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/check-cohort-setup.yml) | A per-cohort checklist of everything configured (identity, people, schedule + release plan, roster, teams, grades) with direct edit links for anything missing. Read-only. | Run by instructor |
-| [**Publish course website**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/publish-site.yml) | **[OPTIONAL]** **[DEFERRED]** Build/refresh a public openware site for the course `hertie-nlp-e1282.github.io`. This will share this course's lecture materials and (limited) readings with the open internet. Opt-in (the first run scaffolds the site); afterwards a daily cron re-syncs it from the settings that run chose, so later materials edits appear without another click. Pick a materials repo and choose for readings: `reading-list` (citations only) or `actual-readings` (also host the files). Because the materials repos are private, the site **hosts** the shared files itself. This is separate from each cohort's student-facing site. | Run by instructor |
-| [**Release materials**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/release-materials.yml) | Manually release materials to student-facing cohort orgs *(NB: it is recommended to instead use the [scheduling function](https://github.com/hertie-data-science-lab/dsl-teaching-toolkit/blob/release/docs/07-schedule-releases.md) for regular releases)*. Select path(s) for any folder or file, one or several at a time. | Run by instructor |
-| [**Release assignment**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/release-assignment.yml) | Generate one private repo per student from a chosen `assignment-*` template repo - or one shared drop box, or no repo at all, depending on the template's `submit_via`. *(NB: it is recommended to instead use the [scheduling function](https://github.com/hertie-data-science-lab/dsl-teaching-toolkit/blob/release/docs/07-schedule-releases.md) for regular releases)* | Run by instructor |
-| [**Patch released assignment**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/patch-assignment.yml) | Fixed a file after the assignment went out? Commit it to the template, then run this: it pushes the file (or folder) into every submission repo as a new commit on the student's own branch - never a force-push - and posts a note on each receipts issue. A file the student has already changed is left alone unless you tick `overwrite`. Dry run first. | Run by instructor |
+| [**New assignment**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/new-assignment.yml) | Scaffolds an `assignment-<name>` template repo from five answers: brief + starter(s) on `main`; the `solution` branch carries the model solution and `grading_config.yml`, which defines the assignment from there on (hidden tests only when you asked for autograding). | Run by instructor |
+| [**Derive student version**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/derive-student-version.yml) | Writes an assignment's student starter onto `main` from the ONE notebook you keep on its `solution` branch, with the fenced answers (`### BEGIN SOLUTION`, a `solution` cell tag, an Rmd `solution=TRUE` chunk) replaced by placeholders. So you maintain one file, not two. It never writes to `solution`, and it refuses to write a file that had nothing fenced in it. Preview first. | Run by instructor |
+| [**Generate syllabus**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/generate-syllabus.yml) | Writes the weekly plan into your syllabus - one block per session, with its title, learning objectives and reading list - from a semester's `semester-config/schedule.yml`. Only the block between `<!-- dsl:weekly-plan -->` and `<!-- /dsl:weekly-plan -->` changes; without those lines it adds them under "## Weekly plan" at the end. | Run by instructor |
+| [**Check semester setup**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/check-semester-setup.yml) | A per-semester checklist of everything configured (identity, people, schedule + release plan, roster, teams, grades) with direct edit links for anything missing. Read-only. | Run by instructor |
+| [**Publish course website**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/publish-site.yml) | **[OPTIONAL]** **[DEFERRED]** Build/refresh a public openware site for the course `hertie-nlp-e1282.github.io`. This will share this course's lecture materials and (limited) readings with the open internet. Driven by `.github/opencourse.yml` (the console's Public website section), which is off by default; once on, a daily cron re-syncs it, so later materials edits appear without another click. It names a materials repo and how readings appear: `reading-list` (citations only) or `actual-readings` (also host the files). Because the materials repos are private, the site **hosts** the shared files itself. This is separate from each semester's student-facing site. | Run by instructor |
+| [**Release materials**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/release-materials.yml) | Manually release materials to student-facing semester orgs *(NB: it is recommended to instead use the [scheduling function](https://github.com/hertie-data-science-lab/dsl-teaching-toolkit/blob/78da401eed3ddd2b42d571cebb6070305e6d384f/docs/07-schedule-releases.md) for regular releases)*. Select path(s) for any folder or file, one or several at a time. | Run by instructor |
+| [**Release assignment**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/release-assignment.yml) | Generate one private repo per student from a chosen `assignment-*` template repo - or one shared drop box, or no repo at all, depending on the template's `submit_via`. *(NB: it is recommended to instead use the [scheduling function](https://github.com/hertie-data-science-lab/dsl-teaching-toolkit/blob/78da401eed3ddd2b42d571cebb6070305e6d384f/docs/07-schedule-releases.md) for regular releases)* | Run by instructor |
+| [**Patch released assignment**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/patch-assignment.yml) | Fixed a file after the assignment went out? Commit it to the template, then run this: it pushes the file (or folder) into every submission repo as a new commit on the student's own branch - never a force-push - and posts a note on each Submission receipts issue. A file the student has already changed is left alone unless you tick `overwrite`. Preview first. | Run by instructor |
 | [**Collect submissions**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/collect-submissions.yml) | Refresh an assignment's grading sheet now instead of waiting for the cron: re-read each submission, refill its `info:` block and post any receipt still owed. It never freezes anything. | Run by instructor |
-| [**Open team formation**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/open-team-formation.yml) | Email every student still without a team for an assignment whose team-formation window is open - the cap, the closing day and a link to the cohort's **Join team** form. The scheduler already sends this by itself when a window opens; press this to send it again on your own say-so. Nothing is said twice, so a second press reaches only whoever the first one could not. Leave `assignment` empty for every open window. Dry run first. | Run by instructor |
-| [**Distribute grades**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/distribute-grades.yml) | Send what the grading sheet holds: each student's private `grades-<handle>` repo, the registrar export, and an email (needs the `GRAPH_*` secrets). Dry run first. | Run by instructor |
-| [**Propagate cohort edits**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/propagate-cohort.yml) | Carry a cohort's edits to released material back here, as a pull request. For every path already released to that cohort, what the cohort has now is copied over this org's own copy on a branch `from-<cohort-org>`, one commit per path, and one pull request per source repo - merge it, cherry-pick from it, or close it. Deletions are not propagated; a file the cohort dropped is named in the pull request and left where it is. Dry run first. | Run by instructor |
-| [**Archive cohort**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/archive-cohort.yml) | Close a finished cohort out early, or at all - the scheduler does it by itself only for a cohort that writes an `archive:` block in `schedule.yml` (its `event_datetime:` defaults to `semester_end` + 60 days), after a fortnight's notice. It carries the cohort's edits back first, then archives **every repository in the cohort org** - students' work, the materials, `welcome`, the website, `.github` - records what was frozen in `classroom-config/archive/teardown.md`, and archives `classroom-config` last. **Nobody is removed and nothing is deleted**: an archived repo is read-only for everyone, so students keep read access to their own work. Dry run first; it refuses until the archive date has arrived, and `force` overrides that - which is how a cohort with no block is closed out. | Run by instructor |
+| [**Open team formation**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/open-team-formation.yml) | Email every student still without a team for an assignment whose team-formation window is open - the cap, the closing day and a link to the semester's **Join team** form. The scheduler already sends this by itself when a window opens; press this to send it again on your own say-so. Nothing is said twice, so a second press reaches only whoever the first one could not. Leave `assignment` empty for every open window. Preview first. | Run by instructor |
+| [**Distribute grades**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/distribute-grades.yml) | Send what the grading sheet holds: each student's private `grades-<handle>` repo, the registrar export, and an email (needs the `GRAPH_*` secrets). Preview first. | Run by instructor |
+| [**Propagate semester edits**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/propagate-semester.yml) | Carry a semester's edits to released material back here, as a pull request. For every path already released to that semester, what the semester has now is copied over this org's own copy on a branch `from-<semester-org>`, one commit per path, and one pull request per source repo - merge it, cherry-pick from it, or close it. Deletions are not propagated; a file the semester dropped is named in the pull request and left where it is. Preview first. | Run by instructor |
+| [**Archive semester**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/archive-semester.yml) | Archive a finished semester early, or at all - the scheduler does it by itself only for a semester that writes an `archive:` block in `schedule.yml` (its `event_datetime:` defaults to `semester_end` + 60 days), after a fortnight's notice. It carries the semester's edits back first, then archives **every repository in the semester org** - students' work, the materials, `join`, the website, `.github` - records what was frozen in `semester-config/.system/archive.md`, and archives `semester-config` last. **Nobody is removed and nothing is deleted**: an archived repo is read-only for everyone, so students keep read access to their own work. Preview first; it refuses until the archive date has arrived, and `force` overrides that - which is how a semester with no block is closed out. | Run by instructor |
 
 NB: alternatively each materials repo *also* carries its own **Release** workflows (run from inside the repo).
 
@@ -69,25 +69,26 @@ The following are runnable by explicit ad hoc manual dispatch; course instructor
 
 | Action | What it does | Managed |
 | --- | --- | --- |
-| [**Sync membership**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/sync-membership.yml) | Reconciles org + `students`-team access (from `students.csv`), project teams (from `teams.csv`), `course_admins` (from this org's declared `people:` block, mirrored into every cohort's own `course-admin` team), and each cohort's own `instructors`/`teaching_assistants` (from its `classroom-config/people.yml`, reconciled into that cohort's `instructors` team AND a course-org `instructors-<tag>` team).<br><br> Triggers on (1) push (editing any of those files takes effect immediately, including removals so that the file is the live truth) and (2) on a daily cron (catches a faculty entry's `start`/`end` rotation with no edit that day);`workflow_dispatch` is a manual escape hatch. | Auto-handled |
-| [**Refresh actions**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/refresh-actions.yml) | Repopulates the cohort/source-repo/assignment dropdowns, re-equips content repos, and rebuilds this index. Runs itself nightly, so this org stays in step with the central toolkit on its own. | Auto-handled |
-| [**Scheduled release**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/scheduled-release.yml) | Auto-releases whatever each cohort's `classroom-config/schedule.yml` `releases:` plan says is now due. It ticks about every 15 minutes, so each entry's `event_datetime` / `deploy_datetime` is honoured to roughly that. Manual runs default to a dry-run preview ("what opens when"). The manual workflows above still work for early/ad-hoc release. | Auto-handled |
-| _[**Sync site**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/sync-site.yml)_ | _Regenerate a cohort's website from the org structure (releases do this automatically; standard workflow has no need for manual sync)._ | Auto-handled |
+| [**Sync membership**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/sync-membership.yml) | Reconciles org + `students`-team access (from `students.csv`), project teams (from `teams.csv`), `course_admins` (from this org's declared `people:` block, mirrored into every semester's own `course-admin` team), and each semester's own `instructors`/`teaching_assistants` (from its `semester-config/instructors.yml`, reconciled into that semester's `instructors` team AND a course-org `instructors-<semester>` team).<br><br> Triggers on (1) push (editing any of those files takes effect immediately, including removals so that the file is the live truth) and (2) on a daily cron (catches a faculty entry's `start`/`end` rotation with no edit that day);`workflow_dispatch` is a manual escape hatch. | Auto-handled |
+| [**Refresh actions**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/refresh-actions.yml) | Repopulates the semester/source-repo/assignment dropdowns, re-equips content repos, and rebuilds this index. Runs itself nightly, so this org stays in step with the central toolkit on its own. | Auto-handled |
+| [**Scheduled release**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/scheduled-release.yml) | Auto-releases whatever each semester's `semester-config/schedule.yml` `releases:` plan says is now due. It ticks about every 15 minutes, so each entry's `event_datetime` / `deploy_datetime` is honoured to roughly that. Manual runs default to a preview ("what opens when"). The manual workflows above still work for early/ad-hoc release. | Auto-handled |
+| [**Console**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/console.yml) | Runs what the Instructor Console asks for. Not for pressing by hand: the Console fills in the request and follows the run. | Auto-handled |
+| _[**Sync site**](https://github.com/hertie-nlp-e1282/.github/actions/workflows/sync-site.yml)_ | _Regenerate a semester's website from the org structure (releases do this automatically; standard workflow has no need for manual sync)._ | Auto-handled |
 
 
 ## Repository structure (required)
 
 ```
 hertie-nlp-e1282/                            <- this COURSE org (persistent)
-|-- .github/                      profile + faculty & instructor workflows (see Actions tab) + cohort registry
+|-- .github/                      profile + faculty & instructor workflows (see Actions tab) + semester registry
 |-- course-materials-<year>/      lectures/01_.../   readings/01_.../   (+ syllabus, README)
-`-- assignment-<n>-<year>/        is_template repo:
+`-- assignment-<name>/            is_template repo (topic dsl-assignment):
                                     main      -> starter + autograder   (students get this)
                                     solution  -> solution/   (pushed to students on demand)
 
-<Course>-f<year>/                 <- one COHORT org per year (Bootstrap cohort sets it up)
-|-- welcome/                      Join issue -> onboard (enrol)
-|-- classroom-config/             students.csv  (private roster)
+<Course>-f<year>/                 <- one SEMESTER org per year (Bootstrap semester sets it up)
+|-- join/                         Join issue -> onboard (enrol)
+|-- semester-config/             students.csv  (private roster)
 |-- materials/                    released lectures/readings  (students-team read)
 |-- <org>.github.io/              auto-deployed website (synced from this structure)
 `-- <assignment>-<handle>/        one private repo per student (default; see submit_via)
@@ -110,44 +111,44 @@ Add more sections freely (e.g. `labs/01_.../`, `datasets/01_.../`).
 
 ### Assignment repo
 
-`assignment-N-<year>` (an `is_template` repo) - the source for Release assignment:
+`assignment-<name>` (an `is_template` repo) - the source for Release assignment, once a semester's schedule names it:
 - **`main` branch** - the starter code only (no tests, no autograder). This is exactly what students receive (native template-generate copies `main` only).
-- **`solution` branch** - the model solution (`solution/`), plus **`grading_config.yml`** and the **hidden tests** the autograder runs faculty-side at the cutoff. **All of this MUST live on this branch, never on `main`** - that is what guarantees it is never copied into student repos on generate. Only the `solution/` folder reaches students, and only when you run Release assignment with **include_solution** ticked (a separate, later commit); the hidden tests and `grading_config.yml` never do.
+- **`solution` branch** - the model solution (`solution/`), plus **`grading_config.yml`** and the **hidden tests** the autograder runs faculty-side at the cutoff. **All of this MUST live on this branch, never on `main`** - that is what guarantees it is never copied into student repos on generate. Only the `solution/` folder reaches students, and only when you run Release assignment with **solution_datetime** `now` (a separate, later commit); the hidden tests and `grading_config.yml` never do.
 
 ## Further details on how the actions behave
 
 **Release materials** - run it from the materials repo (`course_source_repo` pre-filled with
 that repo) or from the course org's central `.github` control panel (`course_source_repo` is
 a dropdown). **Both** take the same five fields, which are exactly a `schedule.yml` `deploy:`
-entry: `cohort_org`, `course_source_repo`, `course_source_path`, `cohort_dest_repo`,
-`cohort_dest_path` - so the manual workflow and the scheduled release plan share one
+entry: `semester_org`, `course_source_repo`, `course_source_path`, `semester_dest_repo`,
+`semester_dest_path` - so the manual workflow and the scheduled release plan share one
 vocabulary. `course_source_path` is any folder or file (`lectures/03_regression`,
 `mlpkg/simulation`, `SYLLABUS.md`); a folder is copied whole, **every file** in it.
-`course_source_path` and `cohort_dest_path` accept comma-separated lists paired in order, so
-one click can release several paths at once; a blank `cohort_dest_path` mirrors each source
-path. `cohort_dest_repo` (default `materials`) is created on demand, private, with
+`course_source_path` and `semester_dest_path` accept comma-separated lists paired in order, so
+one click can release several paths at once; a blank `semester_dest_path` mirrors each source
+path. `semester_dest_repo` (default `materials`) is created on demand, private, with
 `students` **and** `auditors` read. Copies are additive and idempotent: only what you have
 released appears, and re-releasing changes nothing.
 
-**Release assignment** - two stages: (1) it freezes a cohort-level template repo
+**Release assignment** - two stages: (1) it freezes a semester-level template repo
 `<assignment>` from your `assignment-*-<year>` template; (2) it generates one private
-`<assignment>-<handle>` repo per onboarded student **from that cohort template**, adding
-each as collaborator. After the assignment deadline, rerun with **include_solution** to push the
+`<assignment>-<handle>` repo per onboarded student **from that semester template**, adding
+each as collaborator. After the assignment deadline, rerun with **solution_datetime** `now` to push the
 template's `solution` branch into every student repo. Solutions stay on the `solution`
 branch so a normal release never leaks them. A template's `submit_via` can change stage
 (2) instead: `external` creates no repo at all, and `shared_dropbox_repo` creates one
-`<assignment>-submissions` drop box for the whole cohort rather than one repo each.
+`<assignment>-submissions` drop box for the whole semester rather than one repo each.
 
-**The cohort website** - every cohort has an auto-deployed site `<org>.github.io`. It is regenerated
-on every release (and via **Sync site**). Its lecture links point at the cohort's private repos, so
+**The semester website** - every semester has an auto-deployed site `<org>.github.io`. It is regenerated
+on every release (and via **Sync site**). Its lecture links point at the semester's private repos, so
 they only resolve for enrolled members (deliberate).
 
 **The public course website** (optional) - `Publish course website` builds `hertie-nlp-e1282.github.io`, a public
-open-courseware site for the course as a whole. Unlike the cohort sites it **hosts** the shared lecture
+open-courseware site for the course as a whole. Unlike the semester sites it **hosts** the shared lecture
 files (the source repos are private, so links would 404); readings are published either as a text-only
-reading list or as hosted files. It is opt-in - releases and refresh never touch it, so a public site
-only exists once you run the action - but after that first run a daily cron re-syncs it from the
-settings you chose, so later materials edits reach it on their own.
+reading list or as hosted files. It is off by default and driven by `.github/opencourse.yml` (the
+console's Public website section) - releases and refresh never touch it - and once on, a daily cron
+re-syncs it, so later materials edits reach it on their own.
 
 ---
 Maintained by the [Hertie Data Science Lab](https://github.com/hertie-data-science-lab).
