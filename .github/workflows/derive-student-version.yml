@@ -10,7 +10,7 @@ name: Derive student version
 # repo - so the starter is never maintained by hand beside the answer it is meant to be
 # missing. It never writes to `solution`, and a file with nothing fenced in it is never
 # written at all: the "starter" derived from that would be the model answer.
-# `dry_run` defaults to true and prints the file list and the counts, never the content.
+# `preview` defaults to true and prints the file list and the counts, never the content.
 # See docs/03-add-assignment-to-course.md.
 
 on:
@@ -23,8 +23,8 @@ on:
         default: "assignment-1-f2026"
         options:
           - assignment-1-f2026
-      dry_run:
-        description: "Preview only - list the files and how much would be stripped out of each"
+      preview:
+        description: "Preview - list the files and how much would be stripped out of each"
         type: boolean
         default: true
 
@@ -62,7 +62,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -80,8 +80,8 @@ jobs:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE_ORG: ${{ github.repository_owner }}
           COURSE_SOURCE_REPO: ${{ inputs.course_source_repo }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          PREVIEW: ${{ inputs.preview }}
         run: |
           args=(--course-org "$COURSE_ORG" --course-source-repo "$COURSE_SOURCE_REPO")
-          if [ "$DRY_RUN" = "false" ]; then args+=(--no-dry-run); else args+=(--dry-run); fi
+          if [ "$PREVIEW" = "false" ]; then args+=(--no-preview); else args+=(--preview); fi
           python3 -m dsl_course.derive "${args[@]}"

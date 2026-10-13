@@ -2,39 +2,15 @@
 # re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Publish course website
 
-# Build/refresh the PUBLIC course site <course-org>.github.io (open courseware). The
-# course materials repos are private, so this HOSTS the chosen repo's lecture files in
-# the site (links would otherwise 404). Readings: 'reading-list' shows citations as text
-# only; 'actual-readings' also hosts + links the files (you carry the copyright
-# responsibility); 'none' skips them. Opt-in - the first manual run scaffolds the site and
-# persists its settings into it; the daily cron then re-syncs from those settings (and does
-# nothing at all for a course org that never published a site).
+# Build/refresh the PUBLIC course site <course-org>.github.io (open courseware) from
+# opencourse.yml in this repo: which materials repo, readings mode, lecture files and
+# what to withhold. Edit that file (or the console's Public website tab), then run this;
+# the daily cron re-publishes from it, and does nothing while it says enabled: false.
 
 on:
   schedule:
     - cron: "58 5 * * *"
   workflow_dispatch:
-    inputs:
-      source_repo:
-        description: "Materials repo to publish - the site is REBUILT from it; defaults to the latest course-materials-* repo"
-        required: true
-        type: choice
-        default: "course-materials-f2026"
-        options:
-          - course-materials-f2026
-      readings_mode:
-        description: "Readings: reading-list (citations) / actual-readings (files) / none"
-        required: true
-        type: choice
-        default: reading-list
-        options:
-          - reading-list
-          - actual-readings
-          - none
-      include_lectures:
-        description: "Publish lecture files (the point of the site)"
-        type: boolean
-        default: true
 
 concurrency:
   group: ${{ github.repository }}-publish-course-website
@@ -70,7 +46,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -87,14 +63,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE_ORG: ${{ github.repository_owner }}
-          SOURCE_REPO: ${{ inputs.source_repo }}
-          READINGS_MODE: ${{ inputs.readings_mode }}
-          INC_LEC: ${{ inputs.include_lectures }}
         run: |
           gh auth setup-git
-          args=(--course-org "$COURSE_ORG" --source-repo "$SOURCE_REPO" --readings-mode "$READINGS_MODE")
-          [ "$INC_LEC" = "false" ] && args+=(--no-include-lectures)
-          python3 -m dsl_course.site public-sync "${args[@]}"
+          python3 -m dsl_course.site public-sync --course-org "$COURSE_ORG"
       - name: Close the failure issue once a run succeeds
         if: success()
         env:
@@ -109,8 +80,7 @@ jobs:
           done
 
   resync:
-    # The daily catch-up: no inputs, so public-sync re-runs the settings the last manual
-    # publish persisted in the site repo. No site / no persisted settings -> quiet no-op.
+    # The daily catch-up: the same publish, quiet when opencourse.yml is absent or off.
     # Cron has no actor, so this path skips the check-team gate (as Sync site does).
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
@@ -119,7 +89,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -138,8 +108,7 @@ jobs:
           COURSE_ORG: ${{ github.repository_owner }}
         run: |
           gh auth setup-git
-          python3 -m dsl_course.site public-sync --course-org "$COURSE_ORG" 2>&1 | tee "$RUNNER_TEMP/run.log"
-          exit "${PIPESTATUS[0]}"
+          exec python3 -m dsl_course.site public-sync --course-org "$COURSE_ORG" --daily > >(tee "$RUNNER_TEMP/run.log") 2>&1
       - name: Report an unattended failure as an issue
         id: notice
         if: (failure() || cancelled()) && github.event_name != 'workflow_dispatch'
@@ -156,7 +125,7 @@ jobs:
           # because broken infrastructure is not the teaching staff's problem.
           # Teaching staff read these too (course-admin is mentioned below), and a
           # broken run is not theirs to fix - so the note says who is already on it.
-          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for teaching staff to do.\n' "$note")
+          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for the instructors to do.\n' "$note")
           body=$(printf '%s\ncc @%s/course-admin\n' "$note" "${REPO%%/*}")
           # The step runs under `bash -e`, so an unguarded capture would abort the step on a
           # transient search failure - before the `gh issue create` that is the whole point.

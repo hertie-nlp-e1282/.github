@@ -2,13 +2,13 @@
 # re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Send enrolment codes
 
-# Generates a random enrolment code per student (into classroom-config/students.csv) and
+# Generates a random enrolment code per student (into semester-config/students.csv) and
 # emails each not-yet-onboarded student their code to their Hertie email address. Students
-# paste the code into the welcome Join course issue - no personal data in the public repo.
+# paste the code into the Join course issue - no personal data in the public repo.
 # Needs the GRAPH_* secrets.
 #
-# There is no button: a push to a cohort's students.csv is what fires this (its
-# classroom-config dispatch-send-codes.yml dispatches `send-codes`), so the roster is the
+# There is no button: a push to a semester's students.csv is what fires this (its
+# semester-config dispatch-send-codes.yml dispatches `send-codes`), so the roster is the
 # only thing anyone edits. Re-running is safe - a row is mailed only while its
 # `code_sent_at` is blank - which is also why pushing again does not re-send: to send a
 # row a second time, clear its `code_sent_at` and push that.
@@ -18,7 +18,7 @@ on:
     types: [send-codes]
 
 concurrency:
-  group: ${{ github.repository }}-send-codes-${{ github.event.client_payload.cohort_org }}
+  group: ${{ github.repository }}-send-codes-${{ github.event.client_payload.semester_org }}
   cancel-in-progress: false
 
 permissions: {}
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -44,29 +44,33 @@ jobs:
           cache: pip
           cache-dependency-path: requirements.txt
       - run: pip install -r requirements.txt
-      - name: Send enrolment codes for the cohort that pushed its roster
+      - name: Send enrolment codes for the semester that pushed its roster
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
-          DISPATCH_COHORT: ${{ github.event.client_payload.cohort_org }}
+          DISPATCH_SEMESTER: ${{ github.event.client_payload.semester_org }}
+          OLD_PAYLOAD: ${{ github.event.client_payload.cohort_org }}
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_CERT: ${{ secrets.GRAPH_CLIENT_CERT }}
           GRAPH_SENDER: ${{ secrets.GRAPH_SENDER }}
           DSL_MAINTAINER_EMAIL: ${{ secrets.DSL_MAINTAINER_EMAIL }}
         run: |
-          # A payload with no cohort names nothing to send for. Fail loudly rather than
-          # let an empty --cohort-org reach the CLI and be refused for the wrong reason.
-          if [ -z "$DISPATCH_COHORT" ]; then
-            echo "::error::the send-codes dispatch carried no client_payload.cohort_org - nothing to send."
+          if [ -n "$OLD_PAYLOAD" ]; then
+            echo "::error::NOT_MIGRATED: this dispatch sends cohort_org, the old name of semester_org - run the migration"
             exit 1
           fi
-          # --dispatched-by names the course org whose registry authorises this cohort:
-          # the payload comes from a cohort's bot token, so the cohort it names is
+          # A payload with no semester names nothing to send for. Fail loudly rather than
+          # let an empty --semester-org reach the CLI and be refused for the wrong reason.
+          if [ -z "$DISPATCH_SEMESTER" ]; then
+            echo "::error::the send-codes dispatch carried no client_payload.semester_org - nothing to send."
+            exit 1
+          fi
+          # --dispatched-by names the course org whose registry authorises this semester:
+          # the payload comes from a semester's bot token, so the semester it names is
           # untrusted input.
-          python3 -m dsl_course.enrol_codes --cohort-org "$DISPATCH_COHORT" \
-            --dispatched-by "$COURSE" 2>&1 | tee "$RUNNER_TEMP/run.log"
-          exit "${PIPESTATUS[0]}"
+          exec python3 -m dsl_course.enrol_codes --semester-org "$DISPATCH_SEMESTER" \
+            --dispatched-by "$COURSE" --no-preview > >(tee "$RUNNER_TEMP/run.log") 2>&1
       - name: Report an unattended failure as an issue
         id: notice
         if: (failure() || cancelled()) && github.event_name != 'workflow_dispatch'
@@ -83,7 +87,7 @@ jobs:
           # because broken infrastructure is not the teaching staff's problem.
           # Teaching staff read these too (course-admin is mentioned below), and a
           # broken run is not theirs to fix - so the note says who is already on it.
-          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for teaching staff to do.\n' "$note")
+          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for the instructors to do.\n' "$note")
           body=$(printf '%s\ncc @%s/course-admin\n' "$note" "${REPO%%/*}")
           # The step runs under `bash -e`, so an unguarded capture would abort the step on a
           # transient search failure - before the `gh issue create` that is the whole point.

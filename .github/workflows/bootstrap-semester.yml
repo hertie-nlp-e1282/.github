@@ -1,23 +1,16 @@
 # SYSTEM-OWNED - do not edit, edits here are overwritten. This workflow is
 # re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
-name: Check cohort setup
+name: Bootstrap semester
 
-# A per-cohort glance view of everything configured (and everything still missing),
-# with direct links to fix it. Read-only - this workflow changes nothing.
-# It carries the GRAPH_* secrets to REPORT on them (present/absent only - no value is
-# printed), never to send: this is where a missing mail transport is meant to be caught,
-# before a roster push tries to mail a cohort its codes.
+# You create the empty semester org in the web UI first (GitHub has no org-creation API)
+# and add the bot as an owner. Then run this with that org's name.
 
 on:
   workflow_dispatch:
     inputs:
-      cohort_org:
-        description: "Cohort org"
+      semester_org:
+        description: "Empty semester org you've already created (bot must be an owner)"
         required: true
-        type: choice
-        default: "hertie-nlp-f2026"
-        options:
-          - hertie-nlp-f2026
 
 permissions: {}
 
@@ -41,15 +34,15 @@ jobs:
           cat /tmp/gherr || true
           exit 1
 
-  status:
+  bootstrap-semester:
     needs: check-team
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -62,15 +55,18 @@ jobs:
           cache: pip
           cache-dependency-path: requirements.txt
       - run: pip install -r requirements.txt
-      - name: Check cohort setup
+      - name: Bootstrap + register + refresh
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
+          DSL_BOT_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
-          COHORT_ORG: ${{ inputs.cohort_org }}
-          GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
-          GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
-          GRAPH_CLIENT_CERT: ${{ secrets.GRAPH_CLIENT_CERT }}
-          GRAPH_SENDER: ${{ secrets.GRAPH_SENDER }}
+          SEMESTER: ${{ inputs.semester_org }}
+          # Forwarded, not looked up: this runs in the COURSE org, whose own bootstrap
+          # propagated the address here, so --propagate-secret can pass it down to the
+          # semester. Empty on a course org that never got one - the semester then falls back
+          # to GRAPH_SENDER like everything else.
           DSL_MAINTAINER_EMAIL: ${{ secrets.DSL_MAINTAINER_EMAIL }}
         run: |
-          python3 -m dsl_course.status --course-org "$COURSE" --cohort-org "$COHORT_ORG" >> "$GITHUB_STEP_SUMMARY"
+          python3 -m dsl_course.bootstrap_course --org "$SEMESTER" \
+            --semester --course "$COURSE" --propagate-secret
+          python3 -m dsl_course.seed refresh --course-org "$COURSE"

@@ -2,36 +2,53 @@
 # re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Distribute grades
 
-# Reads the grading sheets in classroom-config and sends what they hold: each student's
+# Reads the grading sheets in semester-config and sends what they hold: each student's
 # private grades-<handle> repo, the registrar export, and (unless silenced) an email saying
 # there is something new to read. Nothing is posted into a submission repo, and nothing is
 # said twice - a re-run after one correction reaches one student.
-# There is no assignment to pick: every run rebuilds every gradebook from every sheet,
-# which is what keeps a gradebook the whole of a student's marks.
-# Dry run first; it writes no grades, sends no mail, and posts who gets what as a
-# "Distribute grades preview" issue in classroom-config. Needs the GRAPH_* secrets to mail.
+# `assignment` empty returns every sheet; named, it returns that assignment's marks only,
+# and each gradebook still shows every assignment already returned.
+# Preview first; it writes no grades, sends no mail, and posts who gets what as a
+# "Distribute grades preview" issue in semester-config. Needs the GRAPH_* secrets to mail.
+# The scheduler's automatic return (an assignment's `marks_return_datetime`) arrives here
+# as a `return-marks` dispatch, and the Console's Return marks starts this workflow too, so
+# every real return of a semester shares one queue. A preview queues behind nothing.
 
 on:
+  repository_dispatch:
+    types: [return-marks]
   workflow_dispatch:
     inputs:
-      cohort_org:
-        description: "Cohort org"
+      semester_org:
+        description: "Semester org"
         required: true
         type: choice
         default: "hertie-nlp-f2026"
         options:
           - hertie-nlp-f2026
-      dry_run:
-        description: "Preview who gets what, as an issue in classroom-config - push no grades, send nothing"
+      assignment:
+        description: "Only this assignment (its repo name, e.g. assignment-2); empty = every one"
+        required: false
+        default: ""
+      preview:
+        description: "Preview who gets what, as an issue in semester-config - push no grades, send nothing"
         type: boolean
         default: true
-      silent:
-        description: "Skip the email notification (just push the grades)"
+      notify:
+        description: "Email each student that their marks are in (off = just push the grades)"
+        type: boolean
+        default: true
+      receipt_note:
+        description: "Also post 'Marks returned: see your marks repo.' once on each student's Submission receipts issue"
+        type: boolean
+        default: false
+      include_feedback:
+        description: "Put the markers' feedback text into each student's email"
         type: boolean
         default: false
 
 concurrency:
-  group: ${{ github.repository }}-distribute-grades
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.preview != false && github.run_id || format('{0}-distribute-grades-{1}', github.repository, github.event_name == 'repository_dispatch' && github.event.client_payload.semester_org || inputs.semester_org) }}
   cancel-in-progress: false
 
 permissions: {}
@@ -57,6 +74,9 @@ jobs:
           exit 1
 
   distribute-grades:
+    # A button press waits for its check-team gate; the scheduler's dispatch has none
+    # (no actor), and `--dispatched-by` checks what it names instead.
+    if: "!cancelled() && (github.event_name == 'repository_dispatch' || needs.check-team.result == 'success')"
     needs: check-team
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -64,7 +84,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -80,16 +100,24 @@ jobs:
       - name: Distribute grades
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
-          COHORT_ORG: ${{ inputs.cohort_org }}
-          DRY_RUN: ${{ inputs.dry_run }}
-          SILENT: ${{ inputs.silent }}
+          SEMESTER_ORG: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.semester_org || inputs.semester_org }}
+          PREVIEW: ${{ github.event_name == 'repository_dispatch' && 'false' || inputs.preview }}
+          NOTIFY: ${{ inputs.notify }}
+          RECEIPT_NOTE: ${{ inputs.receipt_note }}
+          INCLUDE_FEEDBACK: ${{ inputs.include_feedback }}
+          ASSIGNMENT: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.assignment || inputs.assignment }}
+          DISPATCHED_BY: ${{ github.event_name == 'repository_dispatch' && github.repository_owner || '' }}
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_CERT: ${{ secrets.GRAPH_CLIENT_CERT }}
           GRAPH_SENDER: ${{ secrets.GRAPH_SENDER }}
           DSL_MAINTAINER_EMAIL: ${{ secrets.DSL_MAINTAINER_EMAIL }}
         run: |
-          args=(--cohort-org "$COHORT_ORG")
-          if [ "$DRY_RUN" = "false" ]; then args+=(--no-dry-run); else args+=(--dry-run); fi
-          [ "$SILENT" = "true" ] && args+=(--no-notify)
+          args=(--semester-org "$SEMESTER_ORG")
+          if [ "$PREVIEW" = "false" ]; then args+=(--no-preview); else args+=(--preview); fi
+          [ "$NOTIFY" = "false" ] && args+=(--no-notify)
+          [ "$RECEIPT_NOTE" = "true" ] && args+=(--receipt-note)
+          [ "$INCLUDE_FEEDBACK" = "true" ] && args+=(--include-feedback)
+          [ -n "$ASSIGNMENT" ] && args+=(--assignment "$ASSIGNMENT")
+          [ -n "$DISPATCHED_BY" ] && args+=(--dispatched-by "$DISPATCHED_BY")
           python3 -m dsl_course.grades distribute "${args[@]}"

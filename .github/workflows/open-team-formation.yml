@@ -4,26 +4,26 @@ name: Open team formation
 
 # Emails every enrolled student who is still without a team for an assignment whose
 # team-formation window is open: the cap, the day formation closes, and a link to the
-# cohort's Join team form. It is the same message the scheduler sends by itself when a
+# semester's Join team form. It is the same message the scheduler sends by itself when a
 # window opens - this is how you send it again on your own say-so, after announcing the
-# assignment in class or once a cohort's mail secrets are finally set.
-# NOTHING IS SAID TWICE: every message is recorded in classroom-config's
-# team-formation/mailed.csv, so a second press reaches only the students a first press did
+# assignment in class or once a semester's mail secrets are finally set.
+# NOTHING IS SAID TWICE: every message is recorded in semester-config's
+# .system/team-formation/mailed.csv, so a second press reaches only the students a first press did
 # not - a newcomer who has since joined GitHub, and nobody else.
 # Leave `assignment` empty for every window that is open. Filling it in narrows the run to
 # ONE schedule.yml assignment key and leaves the other windows alone; a key with no open
 # window is an error, not a quiet no-op.
-# Overnight (23:00-07:00 in the cohort's own timezone) the message is HELD, pressed or not
+# Overnight (23:00-07:00 in the semester's own timezone) the message is HELD, pressed or not
 # - the students' night is the same night either way - and nothing is claimed, so the next
 # quarter-hourly tick sends it in the morning.
-# Dry run first; it claims nothing, sends nothing, and prints the counts with a sample of
+# Preview first; it claims nothing, sends nothing, and prints the counts with a sample of
 # the wording. Needs the GRAPH_* secrets to mail.
 
 on:
   workflow_dispatch:
     inputs:
-      cohort_org:
-        description: "Cohort org"
+      semester_org:
+        description: "Semester org"
         required: true
         type: choice
         default: "hertie-nlp-f2026"
@@ -33,7 +33,7 @@ on:
         description: "Only this schedule.yml assignment key (leave empty for every open window)"
         required: false
         default: ""
-      dry_run:
+      preview:
         description: "Preview the messages - claim nothing, send nothing"
         type: boolean
         default: true
@@ -72,7 +72,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -89,16 +89,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE_ORG: ${{ github.repository_owner }}
-          COHORT_ORG: ${{ inputs.cohort_org }}
+          SEMESTER_ORG: ${{ inputs.semester_org }}
           ASSIGNMENT: ${{ inputs.assignment }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          PREVIEW: ${{ inputs.preview }}
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_CERT: ${{ secrets.GRAPH_CLIENT_CERT }}
           GRAPH_SENDER: ${{ secrets.GRAPH_SENDER }}
           DSL_MAINTAINER_EMAIL: ${{ secrets.DSL_MAINTAINER_EMAIL }}
         run: |
-          args=(--course-org "$COURSE_ORG" --cohort-org "$COHORT_ORG")
+          args=(--course-org "$COURSE_ORG" --semester-org "$SEMESTER_ORG")
           [ -n "$ASSIGNMENT" ] && args+=(--assignment "$ASSIGNMENT")
-          if [ "$DRY_RUN" = "false" ]; then args+=(--no-dry-run); else args+=(--dry-run); fi
+          if [ "$PREVIEW" = "false" ]; then args+=(--no-preview); else args+=(--preview); fi
           python3 -m dsl_course.team_formation "${args[@]}"

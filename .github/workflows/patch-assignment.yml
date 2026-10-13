@@ -5,18 +5,18 @@ name: Patch released assignment
 # A broken cell, a wrong path, a dataset that moved - after the assignment went out.
 # Commit the fix to the TEMPLATE's default branch first, then run this: it pushes that
 # file (or folder) into every submission repo of the assignment, as a NEW COMMIT on each
-# student's own branch, and posts a note on each receipts issue telling them to pull.
+# student's own branch, and posts a note on each Submission receipts issue telling them to pull.
 # It never force-pushes, and it never replaces a file a student has already changed
 # unless `overwrite` says so - their version is kept and counted instead.
-# The frozen cohort-side hand-out is patched too, so a student who onboards tomorrow is
+# The frozen semester-side hand-out is patched too, so a student who onboards tomorrow is
 # given the corrected file rather than the one everyone else was just patched off.
-# `dry_run` defaults to true. See docs/09-release-assignment-to-cohort.md.
+# `preview` defaults to true. See docs/09-release-assignment-to-cohort.md.
 
 on:
   workflow_dispatch:
     inputs:
-      cohort_org:
-        description: "Cohort org holding the submission repos"
+      semester_org:
+        description: "Semester org holding the submission repos"
         required: true
         type: choice
         default: "hertie-nlp-f2026"
@@ -32,16 +32,16 @@ on:
       path:
         description: "File or folder on the template's default branch to push (e.g. starter.ipynb, or data/)"
         required: true
-      slug:
-        description: "Only if TWO schedule.yml assignments hand out from this template: which one (the schedule key). Leave empty otherwise"
-        required: false
-        default: ""
       overwrite:
         description: "Replace the file even where the student has already changed it (their work on that file is lost)"
         type: boolean
         default: false
-      dry_run:
-        description: "Preview only - count the repos that would be patched, write nothing"
+      assignment:
+        description: "Only if two schedule.yml entries share this template: the one to act on (its key)"
+        required: false
+        default: ""
+      preview:
+        description: "Preview - count the repos that would be patched, write nothing"
         type: boolean
         default: true
 
@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -95,17 +95,17 @@ jobs:
       - name: Patch released assignment
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
-          MASTER_ORG: ${{ github.repository_owner }}
-          COHORT_ORG: ${{ inputs.cohort_org }}
+          COURSE_ORG: ${{ github.repository_owner }}
+          SEMESTER_ORG: ${{ inputs.semester_org }}
           COURSE_SOURCE_REPO: ${{ inputs.course_source_repo }}
           PATH_INPUT: ${{ inputs.path }}
-          SLUG: ${{ inputs.slug }}
           OVERWRITE: ${{ inputs.overwrite }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          ASSIGNMENT: ${{ inputs.assignment }}
+          PREVIEW: ${{ inputs.preview }}
         run: |
           gh auth setup-git
-          args=(--master-org "$MASTER_ORG" --course-source-repo "$COURSE_SOURCE_REPO" --cohort-org "$COHORT_ORG" --patch-path "$PATH_INPUT")
-          [ -n "$SLUG" ] && args+=(--slug "$SLUG")
+          args=(--course-org "$COURSE_ORG" --course-source-repo "$COURSE_SOURCE_REPO" --semester-org "$SEMESTER_ORG" --patch-path "$PATH_INPUT")
           [ "$OVERWRITE" = "true" ] && args+=(--overwrite)
-          if [ "$DRY_RUN" = "false" ]; then args+=(--no-dry-run); else args+=(--dry-run); fi
+          [ -n "$ASSIGNMENT" ] && args+=(--assignment "$ASSIGNMENT")
+          if [ "$PREVIEW" = "false" ]; then args+=(--no-preview); else args+=(--preview); fi
           python3 -m dsl_course.assign "${args[@]}"

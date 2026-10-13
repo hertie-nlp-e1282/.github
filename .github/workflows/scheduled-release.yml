@@ -2,10 +2,10 @@
 # re-rendered from the central DSL teaching toolkit by 'Refresh actions' (nightly).
 name: Scheduled release
 
-# Reads each cohort's classroom-config/schedule.yml and, on every tick: freezes the submission
+# Reads each semester's semester-config/schedule.yml and, on every tick: freezes the submission
 # snapshot for each assignment whose grading deadline has passed, fires every `releases:`
 # release whose `when` datetime has arrived, and autogrades each frozen assignment ONCE
-# (marker: classroom-config/autograde/<slug>/ - delete it to re-grade). Releases are
+# (marker: semester-config/.system/autograde/<slug>/ - delete it to re-grade). Releases are
 # idempotent, so re-releasing on the next tick is a no-op; grading is not re-run. Unattended
 # it releases for real; manual runs default to dry-run.
 #
@@ -18,22 +18,22 @@ name: Scheduled release
 # times a day, not 24 - and an idle tick is ~30s of reads, so the cost of arriving twice is
 # negligible.
 #
-# ONE COHORT, when a cohort's classroom-config push fired this run (driver=classroom-config):
-# this run releases into that cohort alone and asks Sync site - by dispatch, into its own
+# ONE SEMESTER, when a semester's semester-config push fired this run (driver=semester-config):
+# this run releases into that semester alone and asks Sync site - by dispatch, into its own
 # queue, which the same push may already have started - for any render its releases need,
-# instead of pushing the site repo alongside it. The cron and the ds01 timer still walk every cohort.
+# instead of pushing the site repo alongside it. The cron and the ds01 timer still walk every semester.
 #
-# THREE JOBS. `release` walks every cohort (fast: dated copies and repo provisioning) and is
+# THREE JOBS. `release` walks every semester (fast: dated copies and repo provisioning) and is
 # separate because a grading pass can run for two hours and must not hold up a release due
-# meanwhile. `autograde` is one matrix leg per cohort, each queued only against itself, and
-# runs even when the release job failed - one cohort's fault is nobody else's wait. And
+# meanwhile. `autograde` is one matrix leg per semester, each queued only against itself, and
+# runs even when the release job failed - one semester's fault is nobody else's wait. And
 # `autograde-report` files/closes the grading legs' failure issues from a runner of its own,
 # because `autograde` executes the STUDENTS' code and a step after that one holding the bot
 # token would run whatever they left in $GITHUB_ENV, as the org owner.
 
-# A one-cohort run says so in its title: the runs listing is all `cadence` can see, and a run
-# that released into one cohort is not a tick of the whole course.
-run-name: ${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.driver == 'classroom-config' && github.event.client_payload.cohort_org || '') && format('Scheduled release for cohort {0}', github.event.client_payload.cohort_org) || 'Scheduled release' }}
+# A one-semester run says so in its title: the runs listing is all `cadence` can see, and a run
+# that released into one semester is not a tick of the whole course.
+run-name: ${{ (github.event_name == 'repository_dispatch' && (github.event.client_payload.driver == 'semester-config' || github.event.client_payload.driver == 'migrate') && github.event.client_payload.semester_org || '') && format('Scheduled release for cohort {0}', github.event.client_payload.semester_org) || 'Scheduled release' }}
 
 on:
   schedule:
@@ -42,8 +42,8 @@ on:
     types: [scheduled-release]
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: "Preview only - list what WOULD open, release nothing"
+      preview:
+        description: "Preview - list what WOULD open, release nothing"
         type: boolean
         default: true
 
@@ -52,21 +52,21 @@ permissions: {}
 jobs:
   release:
     concurrency:
-      group: ${{ inputs.dry_run == true && github.run_id || 'scheduled-release' }}
+      group: ${{ github.event_name == 'workflow_dispatch' && inputs.preview != false && github.run_id || 'scheduled-release' }}
       cancel-in-progress: false
     outputs:
-      cohorts: ${{ steps.cohorts.outputs.cohorts }}
+      semesters: ${{ steps.semesters.outputs.semesters }}
     # JOB-level, because the failure-issue steps' `if:` must see it and a step's `if:`
     # reads only job- and workflow-level env.
     env:
-      SCOPED: ${{ (github.event_name == 'repository_dispatch' && github.event.client_payload.driver == 'classroom-config' && github.event.client_payload.cohort_org || '') }}
+      SCOPED: ${{ (github.event_name == 'repository_dispatch' && (github.event.client_payload.driver == 'semester-config' || github.event.client_payload.driver == 'migrate') && github.event.client_payload.semester_org || '') }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -79,33 +79,34 @@ jobs:
           cache: pip
           cache-dependency-path: requirements.txt
       - run: pip install -r requirements.txt
-      - name: List the cohorts to grade
-        id: cohorts
+      - name: List the semesters to grade
+        id: semesters
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
         run: |
           # FIRST, so the grading matrix is populated whatever the release pass does: a step
-          # that fails skips the ones after it, and a release fault in one cohort must not
+          # that fails skips the ones after it, and a release fault in one semester must not
           # cancel grading in the others. Assigned, not echoed inline: under `bash -e` a
           # failed substitution inside an echo would write an empty output on a GREEN step,
           # and grading would then be skipped for the whole course, silently.
-          args=(--course-org "$COURSE" --list-cohorts)
-          [ -n "$SCOPED" ] && args+=(--cohort-org "$SCOPED")
-          cohorts=$(python3 -m dsl_course.scheduler "${args[@]}")
-          echo "cohorts=$cohorts" >> "$GITHUB_OUTPUT"
+          args=(--course-org "$COURSE" --list-semesters --no-preview)
+          [ -n "$SCOPED" ] && args+=(--semester-org "$SCOPED")
+          semesters=$(python3 -m dsl_course.scheduler "${args[@]}")
+          echo "semesters=$semesters" >> "$GITHUB_OUTPUT"
       - name: Release what is due
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          PREVIEW: ${{ inputs.preview }}
           EVENT: ${{ github.event_name }}
           DRIVER: ${{ github.event.client_payload.driver }}
+          OLD_PAYLOAD: ${{ github.event.client_payload.cohort_org }}
 # A source the plan cites and the org has not got is emailed to the people git names for
 # it, from this step (see dsl_course.notify) - so the release pass carries the transport
 # alongside the token. Without it the digest issue's @mention is the only channel, which
 # reaches whoever happens to read GitHub notifications that week. This pass also pre-flights
-# the COURSE org's own dsl-course.yml and cohort registry, whose mail goes to the course
+# the COURSE org's own dsl-course.yml and semester registry, whose mail goes to the course
 # admins instead - a second address list, read only here and by Sync membership.
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
@@ -114,19 +115,22 @@ jobs:
           DSL_MAINTAINER_EMAIL: ${{ secrets.DSL_MAINTAINER_EMAIL }}
           DSL_COURSE_ADMIN_EMAILS: ${{ secrets.DSL_COURSE_ADMIN_EMAILS }}
         run: |
+          if [ -n "$OLD_PAYLOAD" ]; then
+            echo "::error::NOT_MIGRATED: this dispatch sends cohort_org, the old name of semester_org - run the migration"
+            exit 1
+          fi
           gh auth setup-git
           # Which driver delivered this tick. The run history is the only record of that,
           # and it is what says whether both drivers are alive (a dispatch names its
           # sender in client_payload.driver; the cron has nobody to name).
           echo "delivered by event=$EVENT driver=${DRIVER:-none}"
           if [ -n "$SCOPED" ]; then
-            args=(--course-org "$COURSE" --cohort-org "$SCOPED" --skip-autograde --defer-site-sync)
+            args=(--course-org "$COURSE" --semester-org "$SCOPED" --skip-autograde --defer-site-sync)
           else
-            args=(--course-org "$COURSE" --all-cohorts --skip-autograde)
+            args=(--course-org "$COURSE" --all-semesters --skip-autograde)
           fi
-          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
-          python3 -m dsl_course.scheduler "${args[@]}" 2>&1 | tee "$RUNNER_TEMP/run.log"
-          exit "${PIPESTATUS[0]}"
+          if [ "$EVENT" = "workflow_dispatch" ] && [ "$PREVIEW" != "false" ]; then args+=(--preview); else args+=(--no-preview); fi
+          exec python3 -m dsl_course.scheduler "${args[@]}" > >(tee "$RUNNER_TEMP/run.log") 2>&1
       - name: Report an unattended failure as an issue
         id: notice
         if: (failure() || cancelled()) && env.SCOPED == '' && github.event_name != 'workflow_dispatch'
@@ -143,7 +147,7 @@ jobs:
           # because broken infrastructure is not the teaching staff's problem.
           # Teaching staff read these too (course-admin is mentioned below), and a
           # broken run is not theirs to fix - so the note says who is already on it.
-          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for teaching staff to do.\n' "$note")
+          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for the instructors to do.\n' "$note")
           body=$(printf '%s\ncc @%s/course-admin\n' "$note" "${REPO%%/*}")
           # The step runs under `bash -e`, so an unguarded capture would abort the step on a
           # transient search failure - before the `gh issue create` that is the whole point.
@@ -153,6 +157,23 @@ jobs:
           # together: a maintainer who gets an email can always find the issue it came
           # from, and a thread that is being kept quiet does not mail either.
           if [ -z "$existing" ]; then
+            # Two strikes: a first failure files and mails only if this job also failed
+            # in the previous run, so a one-off GitHub blip reaches nobody. Any lookup
+            # error reports. GITHUB_WORKFLOW_REF ends `<file>@<ref>`.
+            wf=${GITHUB_WORKFLOW_REF%@*}
+            prior=$(gh api "repos/$REPO/actions/workflows/${wf##*/}/runs?per_page=30" \
+              --jq ".workflow_runs[] | select(.id != $GITHUB_RUN_ID and .event != \"workflow_dispatch\" and ((.display_title // \"\") | startswith(\"Scheduled release for cohort\") | not)) | .id" | head -n 10) || prior=""
+            prev=""
+            for id in $prior; do
+              prev=$(gh api "repos/$REPO/actions/runs/$id/jobs" --paginate \
+                --jq ".jobs[] | select(.name == \"release\" and .conclusion != null and .conclusion != \"skipped\" and (.conclusion != \"cancelled\" or ((.steps // []) | length) > 0)) | .conclusion" | head -n 1) || prev=""
+              [ -n "$prev" ] && break
+            done
+            if [ "$prev" = "success" ]; then
+              echo "first failure since the last good run - no issue or mail yet; the next run reports if it fails too"
+              echo "report=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
             gh issue create --repo "$REPO" --title "$title" --body "$body"
             echo "report=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -201,20 +222,21 @@ jobs:
   autograde:
     # Named, because `autograde-report` below looks its legs up by name through the jobs
     # API - a string this file declares rather than one GitHub composes from the matrix.
-    name: autograde ${{ matrix.cohort }}
+    name: autograde ${{ matrix.semester }}
     needs: [release]
-    # always(), because grading is gated on the durable snapshot marker, not on this run's
-    # release pass: a red release must not silently skip a cohort's grading. The output test
-    # is the empty-matrix guard - GitHub errors on a matrix with no vectors, and a course org
-    # with no cohorts registered yet is a normal state, not a failure.
-    if: always() && needs.release.outputs.cohorts != '' && needs.release.outputs.cohorts != '[]'
+    # !cancelled(), because grading is gated on the durable snapshot marker, not on this
+    # run's release pass: a red release must not silently skip a semester's grading - but a
+    # run an operator CANCELLED must not go on to run student code for two hours. The output
+    # test is the empty-matrix guard - GitHub errors on a matrix with no vectors, and a
+    # course org with no semesters registered yet is a normal state, not a failure.
+    if: "!cancelled() && needs.release.outputs.semesters != '' && needs.release.outputs.semesters != '[]'"
     strategy:
-      # One cohort's grading failure must not cancel the others' - they share nothing.
+      # One semester's grading failure must not cancel the others' - they share nothing.
       fail-fast: false
       matrix:
-        cohort: ${{ fromJSON(needs.release.outputs.cohorts) }}
+        semester: ${{ fromJSON(needs.release.outputs.semesters) }}
     concurrency:
-      group: ${{ inputs.dry_run == true && format('{0}-{1}', github.run_id, matrix.cohort) || format('scheduled-autograde-{0}', matrix.cohort) }}
+      group: ${{ github.event_name == 'workflow_dispatch' && inputs.preview != false && format('{0}-{1}', github.run_id, matrix.semester) || format('scheduled-autograde-{0}', matrix.semester) }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -222,7 +244,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -248,30 +270,31 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
-          COHORT: ${{ matrix.cohort }}
-          DRY_RUN: ${{ inputs.dry_run }}
+          SEMESTER: ${{ matrix.semester }}
+          PREVIEW: ${{ inputs.preview }}
+          EVENT: ${{ github.event_name }}
         run: |
           gh auth setup-git
-          args=(--course-org "$COURSE" --cohort-org "$COHORT" --autograde-only)
-          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          args=(--course-org "$COURSE" --semester-org "$SEMESTER" --autograde-only)
+          if [ "$EVENT" = "workflow_dispatch" ] && [ "$PREVIEW" != "false" ]; then args+=(--preview); else args+=(--no-preview); fi
           python3 -m dsl_course.scheduler "${args[@]}"
   autograde-report:
-    # What the grading job may not do for itself. One leg per cohort, exactly like the
-    # matrix it reports on, so each cohort keeps its own failure issue and a green cohort
+    # What the grading job may not do for itself. One leg per semester, exactly like the
+    # matrix it reports on, so each semester keeps its own failure issue and a green semester
     # never closes a red one's.
     needs: [release, autograde]
-    if: always() && needs.release.outputs.cohorts != '' && needs.release.outputs.cohorts != '[]'
+    if: "!cancelled() && needs.release.outputs.semesters != '' && needs.release.outputs.semesters != '[]'"
     strategy:
       fail-fast: false
       matrix:
-        cohort: ${{ fromJSON(needs.release.outputs.cohorts) }}
+        semester: ${{ fromJSON(needs.release.outputs.semesters) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -284,14 +307,14 @@ jobs:
           cache: pip
           cache-dependency-path: requirements.txt
       - run: pip install -r requirements.txt
-      - name: How this cohort's grading leg ended
+      - name: How this semester's grading leg ended
         id: graded
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           REPO: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
           ATTEMPT: ${{ github.run_attempt }}
-          COHORT: ${{ matrix.cohort }}
+          SEMESTER: ${{ matrix.semester }}
           LEGS: ${{ needs.autograde.result }}
         run: |
           # The matrix's combined result is `success` only when every leg succeeded, and it
@@ -303,23 +326,25 @@ jobs:
             echo "result=success" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # The leg's `name:` is `autograde <cohort>`, set explicitly on the job so this
+          # The leg's `name:` is `autograde <semester>`, set explicitly on the job so this
           # lookup matches a string the workflow declares rather than one GitHub composes.
           # `|| true` and a `head`: under `bash -e` a transient search failure would
           # otherwise abort the job that exists to report, and a re-run reads its OWN
           # attempt. A null conclusion is the API lagging behind a leg `needs:` says has
-          # finished, so it is asked again for about a minute before it is believed.
+          # finished, so it is asked again for about a minute before it is believed. A leg
+          # cancelled with no steps never started - a later run's leg took its place in the
+          # semester's queue - so it reads as skipped: nothing ran, nothing failed.
           for pause in 0 5 10 20 30; do
             sleep "$pause"
             row=$(gh api "repos/$REPO/actions/runs/$RUN_ID/attempts/$ATTEMPT/jobs" --paginate \
-              --jq ".jobs[] | select(.name == \"autograde $COHORT\") | \"\(.conclusion) \(.id)\"" | head -n 1) || true
+              --jq ".jobs[] | select(.name == \"autograde $SEMESTER\") | \"\(if .conclusion == \"cancelled\" and ((.steps // []) | length) == 0 then \"skipped\" else .conclusion end) \(.id)\"" | head -n 1) || true
             if [ "${row%% *}" != "null" ]; then break; fi
           done
           if [ -z "$row" ]; then
-            # No leg for this cohort in this attempt - a cohort registered between the two
+            # No leg for this semester in this attempt - a semester registered between the two
             # jobs, or a matrix leg GitHub never started. Nothing happened, so nothing is
             # filed and nothing is closed.
-            echo "no grading leg for this cohort in this run - nothing to report"
+            echo "no grading leg for this semester in this run - nothing to report"
             echo "result=skipped" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -334,16 +359,16 @@ jobs:
           WORKFLOW: ${{ github.workflow }}
           REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          COHORT: ${{ matrix.cohort }}
+          SEMESTER: ${{ matrix.semester }}
         run: |
-          title="$WORKFLOW (autograde $COHORT) is failing"
+          title="$WORKFLOW (autograde $SEMESTER) is failing"
           note=$(printf 'The unattended run failed or was cancelled: %s\n\nNothing retries it before the next scheduled run. This issue closes itself once a run succeeds.\n' "$RUN_URL")
           # A filed issue emails only the repo's watchers, which in practice is nobody, so
           # the FIRST report mentions the org's admins; course-admin, not instructors,
           # because broken infrastructure is not the teaching staff's problem.
           # Teaching staff read these too (course-admin is mentioned below), and a
           # broken run is not theirs to fix - so the note says who is already on it.
-          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for teaching staff to do.\n' "$note")
+          note=$(printf '%s\nThe toolkit maintainer has been emailed the log - nothing for the instructors to do.\n' "$note")
           body=$(printf '%s\ncc @%s/course-admin\n' "$note" "${REPO%%/*}")
           # The step runs under `bash -e`, so an unguarded capture would abort the step on a
           # transient search failure - before the `gh issue create` that is the whole point.
@@ -353,6 +378,23 @@ jobs:
           # together: a maintainer who gets an email can always find the issue it came
           # from, and a thread that is being kept quiet does not mail either.
           if [ -z "$existing" ]; then
+            # Two strikes: a first failure files and mails only if this job also failed
+            # in the previous run, so a one-off GitHub blip reaches nobody. Any lookup
+            # error reports. GITHUB_WORKFLOW_REF ends `<file>@<ref>`.
+            wf=${GITHUB_WORKFLOW_REF%@*}
+            prior=$(gh api "repos/$REPO/actions/workflows/${wf##*/}/runs?per_page=30" \
+              --jq ".workflow_runs[] | select(.id != $GITHUB_RUN_ID and .event != \"workflow_dispatch\") | .id" | head -n 10) || prior=""
+            prev=""
+            for id in $prior; do
+              prev=$(gh api "repos/$REPO/actions/runs/$id/jobs" --paginate \
+                --jq ".jobs[] | select(.name == \"autograde $SEMESTER\" and .conclusion != null and .conclusion != \"skipped\" and (.conclusion != \"cancelled\" or ((.steps // []) | length) > 0)) | .conclusion" | head -n 1) || prev=""
+              [ -n "$prev" ] && break
+            done
+            if [ "$prev" = "success" ]; then
+              echo "first failure since the last good run - no issue or mail yet; the next run reports if it fails too"
+              echo "report=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
             gh issue create --repo "$REPO" --title "$title" --body "$body"
             echo "report=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -396,9 +438,9 @@ jobs:
           WORKFLOW: ${{ github.workflow }}
           REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          COHORT: ${{ matrix.cohort }}
+          SEMESTER: ${{ matrix.semester }}
         run: |
-          title="$WORKFLOW (autograde $COHORT) is failing"
+          title="$WORKFLOW (autograde $SEMESTER) is failing"
           for n in $(gh issue list --repo "$REPO" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number"); do
             gh issue close "$n" --repo "$REPO" --comment "Recovered: $RUN_URL"
           done
