@@ -5,26 +5,28 @@ course_code: E1282
 # One or two sentences, on ONE line - the blurb on every cohort site. Taken verbatim
 # from the Course Contents section of SYLLABUS.md in course-materials-f2026.
 course_description: "The course provides a conceptual and applied introduction to Natural Language processing (NLP). The program introduces NLP within the broader fields of Machine Learning and Deep Learning. It will cover core topics such as text representation, text preprocessing, supervised and unsupervised learning with labeled and unlabeled datasets, model evaluations, and emerging trends including using other data sources such as audio and video."
-# site_link_extensions: [pdf, html, ipynb]   # OPTIONAL: on the COHORT sites, link ONLY
+# site_link_extensions: [pdf, html, ipynb]   # OPTIONAL: on the SEMESTER sites, link ONLY
 #   # these file types. Default (unset): each session's root files, plus one link per
 #   # subfolder - so a rendered deck lists the deck, not its hundreds of assets. Either way
 #   # everything you release still ships, and the folder itself is always one click away.
 #   # (The public open-courseware site always lists root files - it hosts what it lists.)
 
-# `course_name`, `course_code` and `course_description` are what reach the cohort
-# websites. Editing them here re-syncs every cohort site already bootstrapped from this
+# `course_name`, `course_code` and `course_description` are what reach the semester
+# websites. Editing them here re-syncs every semester site already bootstrapped from this
 # course org.
 #
-# This is the persistent COURSE org - it spans many cohorts (years). Cohorts are
-# registered separately in .github/cohort-courses-pages.yml.
+# This is the persistent COURSE org - it spans many semesters (years). Semesters are
+# registered separately in .github/semesters.yml.
 
 # ---------------------------------------------------------------------------
 # People. Two DIFFERENT things live under the `people:` key below - don't
 # confuse them:
 #
-#   course_admins        GRANTS ACCESS. The single source of truth for course-wide
+#   course_admins        GRANTS ACCESS. Course admins keep every button for this
+#                        course across years; a term's instructors are set per
+#                        semester in instructors.yml. The single source of truth for course-wide
 #                        admin rights - the `course-admin` team here, mirrored into
-#                        every cohort org. A handle added any other way is reverted
+#                        every semester org. A handle added any other way is reverted
 #                        on the next sync unless it's declared here; removing a
 #                        handle here revokes their access.
 #
@@ -32,9 +34,9 @@ course_description: "The course provides a conceptual and applied introduction t
 #                        the OPTIONAL public open-courseware course website (the
 #                        "Publish course website" action). They grant NO GitHub
 #                        access. TAs are NOT declared here - they change every
-#                        cohort, so a cohort's whole teaching team (instructors &
-#                        TAs, their GitHub access AND their cohort-site cards) is
-#                        declared PER COHORT in that cohort's classroom-config/people.yml.
+#                        semester, so a semester's whole teaching team (instructors &
+#                        TAs, their GitHub access AND their semester-site cards) is
+#                        declared PER SEMESTER in that semester's semester-config/instructors.yml.
 # ---------------------------------------------------------------------------
 people:
   course_admins:
@@ -45,8 +47,8 @@ people:
 
   # Instructor website cards (optional, DISPLAY ONLY - no GitHub access) for the
   # OPTIONAL public open-courseware course website. TAs are NOT listed here - a
-  # cohort's own teaching team (instructors & TAs) goes in that cohort's
-  # classroom-config/people.yml instead. Uncomment and fill:
+  # semester's own teaching team (instructors & TAs) goes in that semester's
+  # semester-config/instructors.yml instead. Uncomment and fill:
   # instructors:
   #   - github_handle: "janedoe"
   #     name:  "Prof. Dr. Jane Doe"
