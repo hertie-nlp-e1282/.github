@@ -61,4 +61,3 @@ people:
   #                                               # sites 403 off-site requests and
   #                                               # render as a broken image)
   #     url:   "https://.../profile/jane-doe"     # bio / profile link
-central_ref: 78da401eed3ddd2b42d571cebb6070305e6d384f
