@@ -43,7 +43,7 @@
       "state": "ready",
       "problems": 0,
       "missing": null,
-      "suggestions": 4
+      "suggestions": 3
     },
     "materials": [
       {
@@ -99,8 +99,8 @@
           {
             "id": "withheld",
             "label": "Withheld patterns reviewed",
-            "done": false,
-            "why": "Nothing is withheld from students yet; review the withheld patterns.",
+            "done": true,
+            "why": null,
             "need": "suggested"
           }
         ]
@@ -123,17 +123,6 @@
         "check": "syllabus",
         "repo": "course-materials-f2026",
         "text": "The weekly plan (written from the schedule) is not in SYLLABUS.md yet.",
-        "screen": "materials",
-        "entry": "course-materials-f2026",
-        "need": "suggested",
-        "set_aside": false
-      },
-      {
-        "id": "materials:course-materials-f2026:withheld",
-        "kind": "materials",
-        "check": "withheld",
-        "repo": "course-materials-f2026",
-        "text": "Nothing is withheld from students yet; review the withheld patterns.",
         "screen": "materials",
         "entry": "course-materials-f2026",
         "need": "suggested",
