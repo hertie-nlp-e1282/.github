@@ -6,7 +6,6 @@ course:
   name: Natural Language Processing
   code: E1282
   description: The course provides a conceptual and applied introduction to Natural Language processing (NLP). The program introduces NLP within the broader fields of Machine Learning and Deep Learning. It will cover core topics such as text representation, text preprocessing, supervised and unsupervised learning with labeled and unlabeled datasets, model evaluations, and emerging trends including using other data sources such as audio and video.
-  toolkit_version_ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
 
 people:
   course_admins:
