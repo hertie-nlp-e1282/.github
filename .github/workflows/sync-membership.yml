@@ -6,7 +6,7 @@ on:
   push:
     branches: [main]
     paths:
-      - dsl-course.yml
+      - course.yml
       # The registry is the other half of the course's own config, and its digest issue is
       # the same one - so an edit to either is checked and mailed within the minute rather
       # than waiting for the scheduler's next tick.
@@ -16,15 +16,6 @@ on:
   schedule:
     - cron: "13 6 * * *"
   workflow_dispatch:
-    inputs:
-      semester_org:
-        description: "Semester org"
-        required: true
-        type: choice
-        default: "(faculty only)"
-        options:
-          - (faculty only)
-          - hertie-nlp-f2026
 
 concurrency:
   group: ${{ github.repository }}-sync-membership
@@ -60,7 +51,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -77,11 +68,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
-          SEMESTER_ORG: ${{ inputs.semester_org }}
         run: |
-          args=(--course-org "$COURSE" --no-preview)
-          [ "$SEMESTER_ORG" != "(faculty only)" ] && args+=(--semester-org "$SEMESTER_ORG")
-          python3 -m dsl_course.sync_membership "${args[@]}"
+          python3 -m dsl_course.sync_membership --course-org "$COURSE" --all-semesters --no-preview
       - name: Close the failure issue once a run succeeds
         if: success()
         env:
@@ -103,7 +91,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -124,23 +112,16 @@ jobs:
           DISPATCH_SEMESTER: ${{ github.event.client_payload.semester_org }}
           # The JSON boolean `true` and nothing else - a string "true" or a 1 is absent.
           DISPATCH_ALL: ${{ (toJSON(github.event.client_payload.all_semesters) == 'true' || toJSON(github.event.client_payload.all_cohorts) == 'true') }}
-          OLD_PAYLOAD: ${{ github.event.client_payload.cohort_org }}
           DEPRECATED_ALL: ${{ toJSON(github.event.client_payload.all_cohorts) == 'true' }}
 # A fault in the course org's own config is emailed to its admins from this step (see
-# dsl_course.notify.route_course), so the automatic job carries the transport and the
-# address list alongside the token. The manual button does not: somebody is standing at
-# that run and reads its log.
+# dsl_course.notify.route_course), so the automatic job carries the transport alongside
+# the token. The manual button does not: somebody is standing at that run and reads its log.
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_CERT: ${{ secrets.GRAPH_CLIENT_CERT }}
           GRAPH_SENDER: ${{ secrets.GRAPH_SENDER }}
           DSL_MAINTAINER_EMAIL: ${{ secrets.DSL_MAINTAINER_EMAIL }}
-          DSL_COURSE_ADMIN_EMAILS: ${{ secrets.DSL_COURSE_ADMIN_EMAILS }}
         run: |
-          if [ -n "$OLD_PAYLOAD" ]; then
-            echo "::error::NOT_MIGRATED: this dispatch sends cohort_org, the old name of semester_org - run the migration"
-            exit 1
-          fi
           if [ "$DEPRECATED_ALL" = "true" ]; then
             echo "deprecated: this dispatch sends all_cohorts - read as all_semesters; switch the sender to all_semesters"
           fi

@@ -6,20 +6,12 @@ on:
   push:
     branches: [main]
     paths:
-      - dsl-course.yml
+      - course.yml
   repository_dispatch:
     types: [sync-site]
   schedule:
     - cron: "41 6 * * *"
   workflow_dispatch:
-    inputs:
-      semester_org:
-        description: "Semester whose site to regenerate from the org structure"
-        required: true
-        type: choice
-        default: "hertie-nlp-f2026"
-        options:
-          - hertie-nlp-f2026
 
 concurrency:
   group: ${{ github.repository }}-sync-site
@@ -55,7 +47,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -72,10 +64,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
-          SEMESTER_ORG: ${{ inputs.semester_org }}
         run: |
           gh auth setup-git
-          python3 -m dsl_course.site sync --course-org "$COURSE" --semester-org "$SEMESTER_ORG"
+          python3 -m dsl_course.site sync --course-org "$COURSE" --all-semesters
       - name: Close the failure issue once a run succeeds
         if: success()
         env:
@@ -97,7 +88,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -116,12 +107,7 @@ jobs:
           COURSE: ${{ github.repository_owner }}
           EVENT: ${{ github.event_name }}
           DISPATCH_SEMESTER: ${{ github.event.client_payload.semester_org }}
-          OLD_PAYLOAD: ${{ github.event.client_payload.cohort_org }}
         run: |
-          if [ -n "$OLD_PAYLOAD" ]; then
-            echo "::error::NOT_MIGRATED: this dispatch sends cohort_org, the old name of semester_org - run the migration"
-            exit 1
-          fi
           gh auth setup-git
           args=(--course-org "$COURSE")
           case "$EVENT" in

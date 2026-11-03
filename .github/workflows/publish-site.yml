@@ -3,8 +3,8 @@
 name: Publish course website
 
 # Build/refresh the PUBLIC course site <course-org>.github.io (open courseware) from
-# opencourse.yml in this repo: which materials repo, readings mode, lecture files and
-# what to withhold. Edit that file (or the console's Public website tab), then run this;
+# course.yml `open_course_site:` in this repo: which materials repo and which of its files
+# (`publish:`). Edit that block (or the console's Public website tab), then run this;
 # the daily cron re-publishes from it, and does nothing while it says enabled: false.
 
 on:
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -80,7 +80,7 @@ jobs:
           done
 
   resync:
-    # The daily catch-up: the same publish, quiet when opencourse.yml is absent or off.
+    # The daily catch-up: the same publish, quiet when open_course_site is absent or off.
     # Cron has no actor, so this path skips the check-team gate (as Sync site does).
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER

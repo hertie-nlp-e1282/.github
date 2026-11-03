@@ -8,7 +8,7 @@ name: Send enrolment codes
 # Needs the GRAPH_* secrets.
 #
 # There is no button: a push to a semester's students.csv is what fires this (its
-# semester-config dispatch-send-codes.yml dispatches `send-codes`), so the roster is the
+# semester-config dispatch.yml dispatches `send-codes`), so the roster is the
 # only thing anyone edits. Re-running is safe - a row is mailed only while its
 # `code_sent_at` is blank - which is also why pushing again does not re-send: to send a
 # row a second time, clear its `code_sent_at` and push that.
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           repository: hertie-data-science-lab/dsl-teaching-toolkit
-          ref: release
+          ref: 27ea7c6a76fbf7a2480358e0f76c8e06feef0267
           # No credential left behind in $GITHUB_WORKSPACE/.git/config. Nothing here ever
           # pushes to the checkout - the central repo is public and read-only to these
           # jobs, and every write goes through `gh`/`gh auth setup-git` against ANOTHER
@@ -49,17 +49,12 @@ jobs:
           GH_TOKEN: ${{ secrets.DSL_BOT_TOKEN }}
           COURSE: ${{ github.repository_owner }}
           DISPATCH_SEMESTER: ${{ github.event.client_payload.semester_org }}
-          OLD_PAYLOAD: ${{ github.event.client_payload.cohort_org }}
           GRAPH_TENANT_ID: ${{ secrets.GRAPH_TENANT_ID }}
           GRAPH_CLIENT_ID: ${{ secrets.GRAPH_CLIENT_ID }}
           GRAPH_CLIENT_CERT: ${{ secrets.GRAPH_CLIENT_CERT }}
           GRAPH_SENDER: ${{ secrets.GRAPH_SENDER }}
           DSL_MAINTAINER_EMAIL: ${{ secrets.DSL_MAINTAINER_EMAIL }}
         run: |
-          if [ -n "$OLD_PAYLOAD" ]; then
-            echo "::error::NOT_MIGRATED: this dispatch sends cohort_org, the old name of semester_org - run the migration"
-            exit 1
-          fi
           # A payload with no semester names nothing to send for. Fail loudly rather than
           # let an empty --semester-org reach the CLI and be refused for the wrong reason.
           if [ -z "$DISPATCH_SEMESTER" ]; then
