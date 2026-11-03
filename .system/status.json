@@ -1,7 +1,7 @@
 {
   "schema": "dsl.status/1",
   "inputs": {
-    "course.yml": "7a9a7a890746e3e8393afbc607e021901a882538",
+    "course.yml": "789b52b8f3a39b52b15f663f9b9abd6c0d196118",
     "semesters.yml": "9cf36682775e1648aeb4d78f3c634a21e01fce53"
   },
   "horizon": {
