@@ -74,6 +74,11 @@
         "value": "materials",
         "source": "institution"
       },
+      "release_destinations": {
+        "value": [],
+        "source": "institution",
+        "items": []
+      },
       "autosync_released_edits": {
         "value": false,
         "source": "institution"
