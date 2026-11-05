@@ -43,7 +43,7 @@
       "state": "ready",
       "problems": 0,
       "missing": null,
-      "suggestions": 3
+      "suggestions": 11
     },
     "defaults": {
       "timezone": {
@@ -110,6 +110,62 @@
             "done": true,
             "why": null,
             "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/01_session-1",
+            "label": "readings/01_session-1: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/02_session-2",
+            "label": "readings/02_session-2: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/04_session-4",
+            "label": "readings/04_session-4: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/05_session-5",
+            "label": "readings/05_session-5: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/06_session-6",
+            "label": "readings/06_session-6: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/07_session-7",
+            "label": "readings/07_session-7: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/08_session-8",
+            "label": "readings/08_session-8: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/09_session-9",
+            "label": "readings/09_session-9: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
           }
         ]
       }
@@ -131,6 +187,94 @@
         "check": "syllabus",
         "repo": "course-materials-f2026",
         "text": "The weekly plan (written from the schedule) is not in SYLLABUS.md yet.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/01_session-1",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/02_session-2",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/04_session-4",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/05_session-5",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/06_session-6",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/07_session-7",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/08_session-8",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/09_session-9",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
         "screen": "materials",
         "entry": "course-materials-f2026",
         "need": "suggested",
