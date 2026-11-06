@@ -43,7 +43,7 @@
       "state": "ready",
       "problems": 0,
       "missing": null,
-      "suggestions": 11
+      "suggestions": 12
     },
     "defaults": {
       "timezone": {
@@ -121,6 +121,13 @@
           {
             "id": "reading_list:readings/02_session-2",
             "label": "readings/02_session-2: reading list",
+            "done": false,
+            "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+            "need": "suggested"
+          },
+          {
+            "id": "reading_list:readings/03_session-3",
+            "label": "readings/03_session-3: reading list",
             "done": false,
             "why": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
             "need": "suggested"
@@ -205,6 +212,17 @@
       },
       {
         "id": "materials:course-materials-f2026:reading_list:readings/02_session-2",
+        "kind": "materials",
+        "check": "reading_list",
+        "repo": "course-materials-f2026",
+        "text": "The folder has reading files but no READINGS.md. Students see the files only; a list says what to read and how.",
+        "screen": "materials",
+        "entry": "course-materials-f2026",
+        "need": "suggested",
+        "set_aside": false
+      },
+      {
+        "id": "materials:course-materials-f2026:reading_list:readings/03_session-3",
         "kind": "materials",
         "check": "reading_list",
         "repo": "course-materials-f2026",
